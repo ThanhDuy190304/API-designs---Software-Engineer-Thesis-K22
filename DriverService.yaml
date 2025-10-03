@@ -252,6 +252,49 @@ paths:
                   message_vn: Không tìm thấy tài xế
               
   /drivers/{driverId}/vehicles/{vehicleId}:
+    get:
+      summary: Get vehicle by ID for a driver
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: driverId
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: vehicleId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vehicle'
+        '403':
+          description: Unauthorized driver access
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error_code: UNAUTHORIZED_ACCESS
+                message_en: Unauthorized access
+                message_vn: Truy cập không hợp lệ
+        '404':
+          description: Vehicle not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error_code: VEHICLE_NOT_FOUND
+                message_en: Vehicle not found
+                message_vn: Không tìm thấy xe
+
     put:
       summary: Update vehicle by ID for a driver
       security:
@@ -363,7 +406,148 @@ paths:
                 message_en: Vehicle not found
                 message_vn: Không tìm thấy xe
 
+  /drivers/{id}/documents:
+    get:
+      summary: Get documents by driver ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Document'
+        '403':
+          description: Unauthorized driver access
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error_code: UNAUTHORIZED_ACCESS
+                message_en: Unauthorized access
+                message_vn: Truy cập không hợp lệ
+        '404':
+          description: Driver not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error_code: DRIVER_NOT_FOUND
+                message_en: Driver not found
+                message_vn: Không tìm thấy tài xế
+
+    post:
+      summary: Create document for a driver
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                type:
+                  type: string
+                media_id:
+                  type: string
+                verified_status:
+                  type: string
+                expires_at:
+                  type: string
+                  format: date
+              required:
+                - type
+                - media_id
+                - verified_status
+                - expires_at
+      responses:
+          '201':
+            description: Document created successfully
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Document'
+          '400':
+            description: Invalid input
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ErrorResponse'
+                example:
+                  error_code: INVALID_INPUT
+                  message_en: Invalid request payload
+                  message_vn: Dữ liệu gửi lên không hợp lệ
+          '403':
+            description: Unauthorized driver access
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ErrorResponse'
+                example:
+                  error_code: UNAUTHORIZED_ACCESS
+  
   /drivers/{driverId}/documents/{documentId}:
+
+    get:
+      summary: Get document by ID for a driver
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: driverId
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: documentId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Document'
+        '403':
+          description: Unauthorized driver access
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error_code: UNAUTHORIZED_ACCESS
+                message_en: Unauthorized access
+                message_vn: Truy cập không hợp lệ
+        '404':
+          description: Document not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error_code: DOCUMENT_NOT_FOUND
+                message_en: Document not found
+                message_vn: Không tìm thấy tài liệu   
     put:
       summary: Update document by ID for a driver
       security:
@@ -529,88 +713,6 @@ paths:
                 message_en: Driver not found
                 message_vn: Không tìm thấy tài xế
 
-  /documents:
-    get:
-      summary: Get list of documents
-      security:
-        - bearerAuth: []
-      parameters:
-        - in: query
-          name: page
-          schema:
-            type: integer
-          description: Current page number (default 1)
-        - in: query
-          name: itemsPerPage
-          schema:
-            type: integer
-          description: Number of items per page (default 20)
-      responses:
-        '200':
-          description: Successful response
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  documents:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Document'
-                  pagination:
-                    $ref: '#/components/schemas/Pagination'
-        '403':
-          description: Unauthorized driver access
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              example:
-                error_code: UNAUTHORIZED_ACCESS
-                message_en: Unauthorized access
-                message_vn: Truy cập không hợp lệ
-
-  /vehicles:
-    get:
-      summary: Get list of vehicles
-      security:
-        - bearerAuth: []
-      parameters:
-        - in: query
-          name: page
-          schema:
-            type: integer
-          description: Current page number (default 1)
-        - in: query
-          name: itemsPerPage
-          schema:
-            type: integer
-          description: Number of items per page (default 20)
-      responses:
-        '200':
-          description: Successful response
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  vehicles:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Vehicle'
-                  pagination:
-                    $ref: '#/components/schemas/Pagination'
-        '403':
-          description: Unauthorized driver access
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              example:
-                error_code: UNAUTHORIZED_ACCESS
-                message_en: Unauthorized access
-                message_vn: Truy cập không hợp lệ
-                
   /earnings:
     get:
       summary: Get earnings summary of drivers
