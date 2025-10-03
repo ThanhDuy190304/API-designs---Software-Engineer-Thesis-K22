@@ -44,9 +44,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
-                error_code: UNAUTHORIZED_ACCESS
-                message_en: Unauthorized access
-                message_vn: Truy cập không hợp lệ
+                errorCode: UNAUTHORIZED_ACCESS
+                messageEn: Unauthorized access
+                messageVn: Truy cập không hợp lệ
 
   /renters/{id}:
     get:
@@ -73,9 +73,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
-                error_code: UNAUTHORIZED_ACCESS
-                message_en: Unauthorized access
-                message_vn: Truy cập không hợp lệ
+                errorCode: UNAUTHORIZED_ACCESS
+                messageEn: Unauthorized access
+                messageVn: Truy cập không hợp lệ
         '404':
           description: Renter not found
           content:
@@ -83,9 +83,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
-                error_code: RENTER_NOT_FOUND
-                message_en: Renter not found
-                message_vn: Không tìm thấy người thuê
+                errorCode: RENTER_NOT_FOUND
+                messageEn: Renter not found
+                messageVn: Không tìm thấy người thuê
 
     patch:
       summary: Update renter info
@@ -116,9 +116,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
-                error_code: INVALID_INPUT
-                message_en: Invalid request parameters
-                message_vn: Tham số yêu cầu không hợp lệ
+                errorCode: INVALID_INPUT
+                messageEn: Invalid request parameters
+                messageVn: Tham số yêu cầu không hợp lệ
         '403':
           description: Unauthorized renter access
           content:
@@ -126,9 +126,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
-                error_code: UNAUTHORIZED_ACCESS
-                message_en: Unauthorized access
-                message_vn: Truy cập không hợp lệ
+                errorCode: UNAUTHORIZED_ACCESS
+                messageEn: Unauthorized access
+                messageVn: Truy cập không hợp lệ
         '404':
           description: Renter not found
           content:
@@ -136,9 +136,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
-                error_code: RENTER_NOT_FOUND
-                message_en: Renter not found
-                message_vn: Không tìm thấy người thuê
+                errorCode: RENTER_NOT_FOUND
+                messageEn: Renter not found
+                messageVn: Không tìm thấy người thuê
 
 components:
   schemas:
@@ -169,11 +169,11 @@ components:
     ErrorResponse:
       type: object
       properties:
-        error_code:
+        errorCode:
           type: string
-        message_en:
+        messageEn:
           type: string
-        message_vn:
+        messageVn:
           type: string
 
   securitySchemes:
