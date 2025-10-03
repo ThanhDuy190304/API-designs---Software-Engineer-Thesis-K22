@@ -6,12 +6,13 @@ info:
 servers:
   - url: http://localhost:8080/api/v1
 
+security:
+  - bearerAuth: []
+
 paths:
-  /renters:
+  /feedback:
     get:
-      summary: Get list of renters
-      
-        
+      summary: Get list of feedbacks
       parameters:
         - in: query
           name: page
@@ -31,10 +32,10 @@ paths:
               schema:
                 type: object
                 properties:
-                  renters:
+                  feedbacks:
                     type: array
                     items:
-                      $ref: '#/components/schemas/Renter'
+                      $ref: '#/components/schemas/Feedback'
                   pagination:
                     $ref: '#/components/schemas/Pagination'
         '403':
@@ -48,53 +49,10 @@ paths:
                 messageEn: Unauthorized access
                 messageVn: Truy cập không hợp lệ
 
-  /renters/{id}:
-    get:
-      summary: Get renter by ID
-      
-        
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Successful response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Renter'
-        '403':
-          description: Unauthorized renter access
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              example:
-                errorCode: UNAUTHORIZED_ACCESS
-                messageEn: Unauthorized access
-                messageVn: Truy cập không hợp lệ
-        '404':
-          description: Renter not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              example:
-                errorCode: RENTER_NOT_FOUND
-                messageEn: Renter not found
-                messageVn: Không tìm thấy người thuê
-
-    patch:
-      summary: Update renter info
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
+    post:
+      summary: Create a new feedback
+      security:
+        - bearerAuth: []
       requestBody:
         required: true
         content:
@@ -102,11 +60,25 @@ paths:
             schema:
               type: object
               properties:
-                name:
+                renterId:
                   type: string
+                driverId:
+                  type: string
+                bookingId:
+                  type: string
+                comment:
+                  type: string
+                rating:
+                  type: integer
+              required:
+                - renterId
+                - driverId
+                - bookingId
+                - comment
+                - rating
       responses:
-        '204':
-          description: Updated successfully
+        '201':
+          description: Feedback created successfully
         '400':
           description: Invalid input
           content:
@@ -115,8 +87,14 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
                 errorCode: INVALID_INPUT
-                messageEn: Invalid request parameters
-                messageVn: Tham số yêu cầu không hợp lệ
+                messageEn: Invalid input data
+                messageVn: Dữ liệu đầu vào không hợp lệ
+
+    delete:
+      summary: Delete feedback following filters
+      responses:
+        '204':
+          description: Selected feedback deleted successfully
         '403':
           description: Unauthorized renter access
           content:
@@ -127,29 +105,25 @@ paths:
                 errorCode: UNAUTHORIZED_ACCESS
                 messageEn: Unauthorized access
                 messageVn: Truy cập không hợp lệ
-        '404':
-          description: Renter not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              example:
-                errorCode: RENTER_NOT_FOUND
-                messageEn: Renter not found
-                messageVn: Không tìm thấy người thuê
-
+      
 components:
   schemas:
-    Renter:
+    Feedback:
       type: object
       properties:
         id:
           type: string
-        email:
+        renterId:
           type: string
-        name:
+        driverId:
           type: string
-        phone:
+        bookingId:
+          type: string
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+        comment:
           type: string
 
     Pagination:

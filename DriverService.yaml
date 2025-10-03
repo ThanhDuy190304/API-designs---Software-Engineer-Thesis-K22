@@ -6,12 +6,14 @@ info:
 servers:
   - url: http://localhost:8080/api/v1
 
+security:
+  - bearerAuth: []
+
 paths:
   /drivers:
     get:
       summary: Get list of drivers
-      security:
-        - bearerAuth: []
+      
       parameters:
         - in: query
           name: page
@@ -51,8 +53,7 @@ paths:
   /drivers/{id}:
     get:
       summary: Get driver by ID
-      security:
-        - bearerAuth: []
+      
       parameters:
         - in: path
           name: id
@@ -89,8 +90,7 @@ paths:
 
     patch:
       summary: Update driver by ID
-      security:
-        - bearerAuth: []
+      
       parameters:
         - in: path
           name: id
@@ -143,8 +143,7 @@ paths:
   /drivers/{id}/vehicles:
     get:
       summary: Get vehicles by driver ID
-      security:
-        - bearerAuth: []
+      
       parameters:
         - in: path
           name: id
@@ -183,8 +182,7 @@ paths:
     
     post:
       summary: Create vehicle for a driver
-      security:
-        - bearerAuth: []
+      
       parameters:
         - in: path
           name: id
@@ -254,8 +252,7 @@ paths:
   /drivers/{driverId}/vehicles/{vehicleId}:
     get:
       summary: Get vehicle by ID for a driver
-      security:
-        - bearerAuth: []
+      
       parameters:
         - in: path
           name: driverId
@@ -297,8 +294,7 @@ paths:
 
     put:
       summary: Update vehicle by ID for a driver
-      security:
-        - bearerAuth: []
+      
       parameters:
         - in: path
           name: driverId
@@ -369,8 +365,7 @@ paths:
 
     delete:
       summary: Delete vehicle by ID for a driver
-      security:
-        - bearerAuth: []
+      
       parameters:
         - in: path
           name: driverId
@@ -409,8 +404,7 @@ paths:
   /drivers/{id}/documents:
     get:
       summary: Get documents by driver ID
-      security:
-        - bearerAuth: []
+      
       parameters:
         - in: path
           name: id
@@ -449,8 +443,7 @@ paths:
 
     post:
       summary: Create document for a driver
-      security:
-        - bearerAuth: []
+      
       parameters:
         - in: path
           name: id
@@ -508,8 +501,7 @@ paths:
 
     get:
       summary: Get document by ID for a driver
-      security:
-        - bearerAuth: []
+      
       parameters:
         - in: path
           name: driverId
@@ -550,8 +542,7 @@ paths:
                 message_vn: Không tìm thấy tài liệu   
     put:
       summary: Update document by ID for a driver
-      security:
-        - bearerAuth: []
+      
       parameters:
         - in: path
           name: driverId
@@ -620,8 +611,7 @@ paths:
 
     delete:
       summary: Delete document by ID for a driver
-      security:
-        - bearerAuth: []
+      
       parameters:
         - in: path
           name: driverId
@@ -660,8 +650,7 @@ paths:
   /drivers/{driverId}/earnings:
     get:
       summary: Get earnings by driver ID
-      security:
-        - bearerAuth: []
+      
       parameters:
         - in: path
           name: driverId
@@ -716,8 +705,7 @@ paths:
   /earnings:
     get:
       summary: Get earnings summary of drivers
-      security:
-        - bearerAuth: []
+      
       parameters:
         - in: query
           name: page
