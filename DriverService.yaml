@@ -90,7 +90,6 @@ paths:
 
     patch:
       summary: Update driver by ID
-      
       parameters:
         - in: path
           name: id
@@ -106,6 +105,9 @@ paths:
               properties:
                 name:
                   type: string
+                avatar:
+                  type: string
+                
       responses:
         '204':
           description: Driver updated successfully (no content)
@@ -755,11 +757,17 @@ components:
           type: string
         email:
           type: string
+        avatar:
+          type: string        
         rating:
           type: number
           format: float
         numberOfRatings:
           type: integer
+        creditBalance:
+          type: number
+        cashBalance:
+          type: number
 
     Vehicle:
       type: object
