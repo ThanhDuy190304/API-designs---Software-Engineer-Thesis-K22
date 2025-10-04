@@ -6,12 +6,13 @@ info:
 servers:
   - url: http://localhost:8080/api/v1
 
+security:
+  - bearerAuth: []
+  
 paths:
   /renters:
     get:
       summary: Get list of renters
-      
-        
       parameters:
         - in: query
           name: page

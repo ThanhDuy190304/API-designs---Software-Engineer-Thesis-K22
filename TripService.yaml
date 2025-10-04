@@ -1,0 +1,282 @@
+openapi: 3.0.0
+info:
+  title: Trip Service Public API
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8080/api/v1
+
+security:
+  - bearerAuth: []
+
+paths:
+  /bookings:
+    get:
+      summary: Get list of bookings
+      description: |
+        Returns bookings with fields depending on the user role and booking status:
+
+        - **Renter**:
+          - When status is `PENDING` or `CONFIRMED`: response includes `driver` object
+          - When status is `CANCELLED` or `COMPLETED`: `driver` will be omitted
+
+        - **Driver**:
+          - When status is `PENDING` or `CONFIRMED`: response includes `renter` object
+          - When status is `CANCELLED` or `COMPLETED`: `renter` will be omitted
+
+        - **Admin**:
+          - Always sees both `renter` and `driver` regardless of status
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  bookings:
+                    type: array
+                    items:
+                      oneOf:
+                        - $ref: '#/components/schemas/BookingForRenter'
+                        - $ref: '#/components/schemas/BookingForDriver'
+                        - $ref: '#/components/schemas/BookingForAdmin'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+        '403':
+          description: Unauthorized access
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    post:
+      summary: Create a new booking
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                renterId:
+                  type: string
+                pickup:
+                  type: string
+                dropoff:
+                  type: string
+                note:
+                  type: string
+              required:
+                - renterId
+                - pickup
+                - dropoff
+      responses:
+        '201':
+          description: Booking created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookingForRenter'
+        '400':
+          description: Invalid input data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Unauthorized access
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /bookings/{bookingId}:
+    get:
+      summary: Get booking details by ID
+      description: |
+        Returns a single booking filtered by user role and status rules:
+        - Renter: `driver` only if booking is PENDING or CONFIRMED
+        - Driver: `renter` only if booking is PENDING or CONFIRMED
+        - Admin: always includes both
+      parameters:
+        - name: bookingId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/BookingForRenter'
+                  - $ref: '#/components/schemas/BookingForDriver'
+                  - $ref: '#/components/schemas/BookingForAdmin'
+        '403':
+          description: Unauthorized access
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Booking not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    patch:
+      summary: Update status of a booking (cancel, complete)
+      parameters:
+        - name: bookingId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [CANCELLED, COMPLETED]
+                cancelReason:
+                  type: string
+              required:
+                - status
+      responses:
+        '204':
+          description: Booking updated successfully
+        '400':
+          description: Invalid input data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Unauthorized access
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Booking not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    BookingBase:
+      type: object
+      properties:
+        id:
+          type: string
+        status:
+          type: string
+          enum: [PENDING, CONFIRMED, CANCELLED, COMPLETED]
+        pickup:
+          type: string
+        dropoff:
+          type: string
+        note:
+          type: string
+        cancelBy:
+          type: string
+          enum: [RENTER, DRIVER]
+        cancelReason:
+          type: string
+        cancelAt:
+          type: string
+          format: date-time
+
+    BookingForRenter:
+      allOf:
+        - $ref: '#/components/schemas/BookingBase'
+        - type: object
+          properties:
+            driver:
+              $ref: '#/components/schemas/Driver'
+          description: |
+            Includes driver only if status is PENDING or CONFIRMED.  
+            Otherwise, `driver` is omitted.
+
+    BookingForDriver:
+      allOf:
+        - $ref: '#/components/schemas/BookingBase'
+        - type: object
+          properties:
+            renter:
+              $ref: '#/components/schemas/Renter'
+          description: |
+            Includes renter only if status is PENDING or CONFIRMED.  
+            Otherwise, `renter` is omitted.
+
+    BookingForAdmin:
+      allOf:
+        - $ref: '#/components/schemas/BookingBase'
+        - type: object
+          properties:
+            renterId:
+              type: string
+            driverId:
+              type: string
+          description: |
+            Always includes both renter and driver, regardless of status.
+
+    Renter:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        phone:
+          type: string
+
+    Driver:
+      type: object
+      properties:
+        id:
+          type: string
+        avatar:
+          type: string
+        name:
+          type: string
+        licensePlate:
+          type: string
+
+    Pagination:
+      type: object
+      properties:
+        currentPage:
+          type: integer
+        itemsPerPage:
+          type: integer
+        totalItems:
+          type: integer
+        totalPages:
+          type: integer
+
+    ErrorResponse:
+      type: object
+      properties:
+        errorCode:
+          type: string
+        messageEn:
+          type: string
+        messageVn:
+          type: string
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

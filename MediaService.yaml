@@ -1,0 +1,119 @@
+openapi: 3.0.0
+info:
+  title: Media Service Public API
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8080/api/v1
+
+security:
+  - bearerAuth: []
+
+paths:
+  /media:
+    post:
+      summary: Upload a media file
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '201':
+          description: Media file uploaded successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Media'
+        '400':
+          description: Invalid input data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                errorCode: INVALID_INPUT
+                messageEn: Invalid input data
+                messageVn: Dữ liệu đầu vào không hợp lệ
+        '403':
+          description: Unauthorized access
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                errorCode: UNAUTHORIZED_ACCESS
+                messageEn: Unauthorized access
+                messageVn: Truy cập không hợp lệ
+
+    delete:
+      summary: Delete a media file
+      parameters:
+        - in: query
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID of the media file to delete
+      responses:
+        '204':
+          description: Media file deleted successfully
+        '400':
+          description: Invalid media ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                errorCode: INVALID_MEDIA_ID
+                messageEn: Invalid media ID
+                messageVn: ID phương tiện không hợp lệ
+        '403':
+          description: Unauthorized access
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                errorCode: UNAUTHORIZED_ACCESS
+                messageEn: Unauthorized access
+                messageVn: Truy cập không hợp lệ
+
+components:
+  schemas:
+    Media:
+      type: object
+      properties:
+        id:
+          type: string
+        filename:
+          type: string
+        size:
+          type: number
+        path:
+          type: string
+        type:
+          type: string
+        extension:
+          type: string
+
+    ErrorResponse:
+      type: object
+      properties:
+        errorCode:
+          type: string
+        messageEn:
+          type: string
+        messageVn:
+          type: string
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

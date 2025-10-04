@@ -280,6 +280,7 @@ components:
           type: string
         type:
           type: string
+          enum: [LOYALTY, EVENT, SEASONAL]
         value:
           type: number
         conditions:
