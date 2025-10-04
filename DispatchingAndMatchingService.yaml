@@ -1,0 +1,136 @@
+openapi: 3.0.0
+info:
+  title: Dispatching And Matching Driver Service Public API
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8080/api/v1
+
+security:
+  - bearerAuth: []
+
+paths:
+  /offers:
+    get:
+      summary: Get list of offers
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+          description: Current page number (default 1)
+        - in: query
+          name: itemsPerPage
+          schema:
+            type: integer
+          description: Number of items per page (default 20)
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  offers:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Offers'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+        '403':
+          description: Unauthorized renter access
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                errorCode: UNAUTHORIZED_ACCESS
+                messageEn: Unauthorized access
+                messageVn: Truy cập không hợp lệ
+
+    delete:
+      summary: Delete following offer by filters
+      parameters:
+        - in: query
+          name: bookingId
+          schema:
+            type: string
+          description: Booking ID to filter offers
+        - in: query
+          name: driverId
+          schema:
+            type: string
+          description: Driver ID to filter offers
+      responses:
+        '204':
+          description: Offer deleted successfully
+        '403': 
+          description: Unauthorized access
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                errorCode: UNAUTHORIZED_ACCESS
+                messageEn: Unauthorized access
+                messageVn: Truy cập không hợp lệ
+        '404':
+          description: Offer not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                errorCode: OFFER_NOT_FOUND
+                messageEn: Offer not found
+                messageVn: Không tìm thấy đề nghị
+
+components:
+  schemas:
+    Offers:
+      type: object
+      properties:
+        id:
+          type: string
+        bookingId:
+          type: string
+        driverId:
+          type: string
+        status:
+          type: string
+          enum: [REJECT, ACCEPT, PENDING]
+        sendAt:
+          type: string
+          format: date-time
+        expiresAt:
+          type: string
+          format: date-time
+    
+    Pagination:
+      type: object
+      properties:
+        totalItems:
+          type: integer
+        totalPages:
+          type: integer
+        currentPage:
+          type: integer
+        itemsPerPage:
+          type: integer
+
+    ErrorResponse:
+      type: object
+      properties:
+        errorCode:
+          type: string
+        messageEn:
+          type: string
+        messageVn:
+          type: string
+
+  securitySchemes:
+    bearerAuth:  
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
