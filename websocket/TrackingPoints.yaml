@@ -4,8 +4,6 @@ info:
   version: '1.0.0'
   description: |
     This AsyncAPI specification defines the WebSocket interface for real-time tracking points of a booking.
-    - **Client (Driver app)** will **publish** tracking points to the server.
-    - **Server** will **broadcast/subscribe** tracking points back to renters or admins.
 
 servers:
   production:
@@ -15,8 +13,7 @@ servers:
 
 channels:
   bookings/{bookingId}/tracking:
-    description: |
-      Real-time tracking channel for a specific booking.
+    description: Real-time tracking channel for a specific booking.
     parameters:
       bookingId:
         description: Booking ID to track
@@ -25,12 +22,14 @@ channels:
     publish:
       summary: Driver publishes a new tracking point
       message:
+        contentType: application/json
         name: TrackingPointMessage
         payload:
           $ref: '#/components/schemas/TrackingPoint'
     subscribe:
-      summary: Server pushes tracking point updates to renter/admin
+      summary: Server pushes tracking point updates
       message:
+        contentType: application/json
         name: TrackingPointMessage
         payload:
           $ref: '#/components/schemas/TrackingPoint'
@@ -53,7 +52,6 @@ components:
             type:
               type: string
               enum: [Point]
-              example: Point
             coordinates:
               type: array
               items:
@@ -63,14 +61,11 @@ components:
               example: [106.660172, 10.762622]
         speed:
           type: number
-          description: Speed at this point (km/h)
           example: 45.2
         heading:
           type: number
-          description: Movement heading in degrees
           example: 90
         recorded_at:
           type: string
           format: date-time
-          description: Time of recording
           example: "2025-10-04T07:12:00Z"
