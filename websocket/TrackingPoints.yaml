@@ -1,0 +1,76 @@
+asyncapi: '2.6.0'
+info:
+  title: Trip Service Tracking API
+  version: '1.0.0'
+  description: |
+    This AsyncAPI specification defines the WebSocket interface for real-time tracking points of a booking.
+    - **Client (Driver app)** will **publish** tracking points to the server.
+    - **Server** will **broadcast/subscribe** tracking points back to renters or admins.
+
+servers:
+  production:
+    url: ws://localhost:8080/api/v1/ws
+    protocol: ws
+    description: Production WebSocket server
+
+channels:
+  bookings/{bookingId}/tracking:
+    description: |
+      Real-time tracking channel for a specific booking.
+    parameters:
+      bookingId:
+        description: Booking ID to track
+        schema:
+          type: string
+    publish:
+      summary: Driver publishes a new tracking point
+      message:
+        name: TrackingPointMessage
+        payload:
+          $ref: '#/components/schemas/TrackingPoint'
+    subscribe:
+      summary: Server pushes tracking point updates to renter/admin
+      message:
+        name: TrackingPointMessage
+        payload:
+          $ref: '#/components/schemas/TrackingPoint'
+
+components:
+  schemas:
+    TrackingPoint:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier of the tracking point
+        bookingId:
+          type: string
+          description: Associated booking ID
+        location:
+          type: object
+          description: GPS location in GeoJSON format
+          properties:
+            type:
+              type: string
+              enum: [Point]
+              example: Point
+            coordinates:
+              type: array
+              items:
+                type: number
+              minItems: 2
+              maxItems: 2
+              example: [106.660172, 10.762622]
+        speed:
+          type: number
+          description: Speed at this point (km/h)
+          example: 45.2
+        heading:
+          type: number
+          description: Movement heading in degrees
+          example: 90
+        recorded_at:
+          type: string
+          format: date-time
+          description: Time of recording
+          example: "2025-10-04T07:12:00Z"
