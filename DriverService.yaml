@@ -46,9 +46,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
-                error_code: UNAUTHORIZED_ACCESS
-                message_en: Unauthorized access
-                message_vn: Truy cập không hợp lệ
+                errorCode: UNAUTHORIZED_ACCESS
+                messageEn: Unauthorized access
+                messageVn: Truy cập không hợp lệ
 
   /drivers/{id}:
     get:
@@ -74,9 +74,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
-                error_code: UNAUTHORIZED_ACCESS
-                message_en: Unauthorized access
-                message_vn: Truy cập không hợp lệ
+                errorCode: UNAUTHORIZED_ACCESS
+                messageEn: Unauthorized access
+                messageVn: Truy cập không hợp lệ
         '404':
           description: Driver not found
           content:
@@ -84,9 +84,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
-                error_code: DRIVER_NOT_FOUND
-                message_en: Driver not found
-                message_vn: Không tìm thấy tài xế
+                errorCode: DRIVER_NOT_FOUND
+                messageEn: Driver not found
+                messageVn: Không tìm thấy tài xế
 
     patch:
       summary: Update driver by ID
@@ -107,7 +107,7 @@ paths:
                   type: string
                 avatar:
                   type: string
-                
+           
       responses:
         '204':
           description: Driver updated successfully (no content)
@@ -118,9 +118,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
-                error_code: INVALID_INPUT
-                message_en: Invalid request payload
-                message_vn: Dữ liệu gửi lên không hợp lệ
+                errorCode: INVALID_INPUT
+                messageEn: Invalid request payload
+                messageVn: Dữ liệu gửi lên không hợp lệ
         '403':
           description: Unauthorized driver access
           content:
@@ -128,9 +128,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
-                error_code: UNAUTHORIZED_ACCESS
-                message_en: Unauthorized access
-                message_vn: Truy cập không hợp lệ
+                errorCode: UNAUTHORIZED_ACCESS
+                messageEn: Unauthorized access
+                messageVn: Truy cập không hợp lệ
         '404':
           description: Driver not found
           content:
@@ -138,9 +138,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
-                error_code: DRIVER_NOT_FOUND
-                message_en: Driver not found
-                message_vn: Không tìm thấy tài xế
+                errorCode: DRIVER_NOT_FOUND
+                messageEn: Driver not found
+                messageVn: Không tìm thấy tài xế
 
   /drivers/{id}/vehicles:
     get:
@@ -168,9 +168,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
-                error_code: UNAUTHORIZED_ACCESS
-                message_en: Unauthorized access
-                message_vn: Truy cập không hợp lệ
+                errorCode: UNAUTHORIZED_ACCESS
+                messageEn: Unauthorized access
+                messageVn: Truy cập không hợp lệ
         '404':
           description: Driver not found
           content:
@@ -178,9 +178,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
-                error_code: DRIVER_NOT_FOUND
-                message_en: Driver not found
-                message_vn: Không tìm thấy tài xế
+                errorCode: DRIVER_NOT_FOUND
+                messageEn: Driver not found
+                messageVn: Không tìm thấy tài xế
     
     post:
       summary: Create vehicle for a driver
@@ -227,9 +227,9 @@ paths:
                 schema:
                   $ref: '#/components/schemas/ErrorResponse'
                 example:
-                  error_code: INVALID_INPUT
-                  message_en: Invalid request payload
-                  message_vn: Dữ liệu gửi lên không hợp lệ
+                  errorCode: INVALID_INPUT
+                  messageEn: Invalid request payload
+                  messageVn: Dữ liệu gửi lên không hợp lệ
           '403':
             description: Unauthorized driver access
             content:
@@ -237,9 +237,9 @@ paths:
                 schema:
                   $ref: '#/components/schemas/ErrorResponse'
                 example:
-                  error_code: UNAUTHORIZED_ACCESS
-                  message_en: Unauthorized access
-                  message_vn: Truy cập không hợp lệ
+                  errorCode: UNAUTHORIZED_ACCESS
+                  messageEn: Unauthorized access
+                  messageVn: Truy cập không hợp lệ
           '404':
             description: Driver not found
             content:
@@ -247,9 +247,9 @@ paths:
                 schema:
                   $ref: '#/components/schemas/ErrorResponse'
                 example:
-                  error_code: DRIVER_NOT_FOUND
-                  message_en: Driver not found
-                  message_vn: Không tìm thấy tài xế
+                  errorCode: DRIVER_NOT_FOUND
+                  messageEn: Driver not found
+                  messageVn: Không tìm thấy tài xế
               
   /drivers/{driverId}/vehicles/{vehicleId}:
     get:
@@ -280,9 +280,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
-                error_code: UNAUTHORIZED_ACCESS
-                message_en: Unauthorized access
-                message_vn: Truy cập không hợp lệ
+                errorCode: UNAUTHORIZED_ACCESS
+                messageEn: Unauthorized access
+                messageVn: Truy cập không hợp lệ
         '404':
           description: Vehicle not found
           content:
@@ -290,9 +290,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
-                error_code: VEHICLE_NOT_FOUND
-                message_en: Vehicle not found
-                message_vn: Không tìm thấy xe
+                errorCode: VEHICLE_NOT_FOUND
+                messageEn: Vehicle not found
+                messageVn: Không tìm thấy xe
 
     put:
       summary: Update vehicle by ID for a driver
@@ -341,9 +341,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
-                error_code: INVALID_INPUT
-                message_en: Invalid request payload
-                message_vn: Dữ liệu gửi lên không hợp lệ
+                errorCode: INVALID_INPUT
+                messageEn: Invalid request payload
+                messageVn: Dữ liệu gửi lên không hợp lệ
         '403':
           description: Unauthorized driver access
           content:
@@ -351,9 +351,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
-                error_code: UNAUTHORIZED_ACCESS
-                message_en: Unauthorized access
-                message_vn: Truy cập không hợp lệ
+                errorCode: UNAUTHORIZED_ACCESS
+                messageEn: Unauthorized access
+                messageVn: Truy cập không hợp lệ
         '404':
           description: Vehicle not found
           content:
@@ -361,9 +361,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
-                error_code: VEHICLE_NOT_FOUND
-                message_en: Vehicle not found
-                message_vn: Không tìm thấy xe
+                errorCode: VEHICLE_NOT_FOUND
+                messageEn: Vehicle not found
+                messageVn: Không tìm thấy xe
 
     delete:
       summary: Delete vehicle by ID for a driver
@@ -389,9 +389,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
-                error_code: UNAUTHORIZED_ACCESS
-                message_en: Unauthorized access
-                message_vn: Truy cập không hợp lệ
+                errorCode: UNAUTHORIZED_ACCESS
+                messageEn: Unauthorized access
+                messageVn: Truy cập không hợp lệ
         '404':
           description: Vehicle not found
           content:
@@ -399,9 +399,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
-                error_code: VEHICLE_NOT_FOUND
-                message_en: Vehicle not found
-                message_vn: Không tìm thấy xe
+                errorCode: VEHICLE_NOT_FOUND
+                messageEn: Vehicle not found
+                messageVn: Không tìm thấy xe
 
   /drivers/{id}/documents:
     get:
@@ -429,9 +429,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
-                error_code: UNAUTHORIZED_ACCESS
-                message_en: Unauthorized access
-                message_vn: Truy cập không hợp lệ
+                errorCode: UNAUTHORIZED_ACCESS
+                messageEn: Unauthorized access
+                messageVn: Truy cập không hợp lệ
         '404':
           description: Driver not found
           content:
@@ -439,9 +439,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
-                error_code: DRIVER_NOT_FOUND
-                message_en: Driver not found
-                message_vn: Không tìm thấy tài xế
+                errorCode: DRIVER_NOT_FOUND
+                messageEn: Driver not found
+                messageVn: Không tìm thấy tài xế
 
     post:
       summary: Create document for a driver
@@ -461,18 +461,18 @@ paths:
               properties:
                 type:
                   type: string
-                media_id:
+                mediaId:
                   type: string
-                verified_status:
+                verifiedStatus:
                   type: string
-                expires_at:
+                expiresAt:
                   type: string
                   format: date
               required:
                 - type
-                - media_id
-                - verified_status
-                - expires_at
+                - mediaId
+                - verifiedStatus
+                - expiresAt
       responses:
           '201':
             description: Document created successfully
@@ -487,9 +487,9 @@ paths:
                 schema:
                   $ref: '#/components/schemas/ErrorResponse'
                 example:
-                  error_code: INVALID_INPUT
-                  message_en: Invalid request payload
-                  message_vn: Dữ liệu gửi lên không hợp lệ
+                  errorCode: INVALID_INPUT
+                  messageEn: Invalid request payload
+                  messageVn: Dữ liệu gửi lên không hợp lệ
           '403':
             description: Unauthorized driver access
             content:
@@ -497,8 +497,20 @@ paths:
                 schema:
                   $ref: '#/components/schemas/ErrorResponse'
                 example:
-                  error_code: UNAUTHORIZED_ACCESS
-  
+                  errorCode: UNAUTHORIZED_ACCESS
+                  messageEn: Unauthorized access
+                  messageVn: Truy cập không hợp lệ
+          '404':
+            description: Driver not found
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ErrorResponse'
+                example:
+                  errorCode: DRIVER_NOT_FOUND
+                  messageEn: Driver not found
+                  messageVn: Không tìm thấy tài xế
+              
   /drivers/{driverId}/documents/{documentId}:
 
     get:
@@ -529,9 +541,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
-                error_code: UNAUTHORIZED_ACCESS
-                message_en: Unauthorized access
-                message_vn: Truy cập không hợp lệ
+                errorCode: UNAUTHORIZED_ACCESS
+                messageEn: Unauthorized access
+                messageVn: Truy cập không hợp lệ
         '404':
           description: Document not found
           content:
@@ -539,9 +551,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
-                error_code: DOCUMENT_NOT_FOUND
-                message_en: Document not found
-                message_vn: Không tìm thấy tài liệu   
+                errorCode: DOCUMENT_NOT_FOUND
+                messageEn: Document not found
+                messageVn: Không tìm thấy tài liệu   
     put:
       summary: Update document by ID for a driver
       
@@ -565,18 +577,18 @@ paths:
               properties:
                 type:
                   type: string
-                media_id:
+                mediaId:
                   type: string
-                verified_status:
+                verifiedStatus:
                   type: string
-                expires_at:
+                expiresAt:
                   type: string
                   format: date
               required:
                 - type
-                - media_id
-                - verified_status
-                - expires_at
+                - mediaId
+                - verifiedStatus
+                - expiresAt
       responses:
         '204':
           description: Document updated successfully (no-content)
@@ -587,9 +599,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
-                error_code: INVALID_INPUT
-                message_en: Invalid request payload
-                message_vn: Dữ liệu gửi lên không hợp lệ
+                errorCode: INVALID_INPUT
+                messageEn: Invalid request payload
+                messageVn: Dữ liệu gửi lên không hợp lệ
         '403':
           description: Unauthorized driver access
           content:
@@ -597,9 +609,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
-                error_code: UNAUTHORIZED_ACCESS
-                message_en: Unauthorized access
-                message_vn: Truy cập không hợp lệ
+                errorCode: UNAUTHORIZED_ACCESS
+                messageEn: Unauthorized access
+                messageVn: Truy cập không hợp lệ
         '404':
           description: Document not found
           content:
@@ -607,9 +619,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
-                error_code: DOCUMENT_NOT_FOUND
-                message_en: Document not found
-                message_vn: Không tìm thấy tài liệu
+                errorCode: DOCUMENT_NOT_FOUND
+                messageEn: Document not found
+                messageVn: Không tìm thấy tài liệu
 
     delete:
       summary: Delete document by ID for a driver
@@ -635,9 +647,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
-                error_code: UNAUTHORIZED_ACCESS
-                message_en: Unauthorized access
-                message_vn: Truy cập không hợp lệ
+                errorCode: UNAUTHORIZED_ACCESS
+                messageEn: Unauthorized access
+                messageVn: Truy cập không hợp lệ
         '404':
           description: Document not found
           content:
@@ -645,9 +657,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
-                error_code: DOCUMENT_NOT_FOUND
-                message_en: Document not found
-                message_vn: Không tìm thấy tài liệu
+                errorCode: DOCUMENT_NOT_FOUND
+                messageEn: Document not found
+                messageVn: Không tìm thấy tài liệu
 
   /drivers/{driverId}/earnings:
     get:
@@ -690,9 +702,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
-                error_code: UNAUTHORIZED_ACCESS
-                message_en: Unauthorized access
-                message_vn: Truy cập không hợp lệ
+                errorCode: UNAUTHORIZED_ACCESS
+                messageEn: Unauthorized access
+                messageVn: Truy cập không hợp lệ
         '404':
           description: Driver not found
           content:
@@ -700,9 +712,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
-                error_code: DRIVER_NOT_FOUND
-                message_en: Driver not found
-                message_vn: Không tìm thấy tài xế
+                errorCode: DRIVER_NOT_FOUND
+                messageEn: Driver not found
+                messageVn: Không tìm thấy tài xế
 
   /earnings:
     get:
@@ -740,9 +752,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
-                error_code: UNAUTHORIZED_ACCESS
-                message_en: Unauthorized access
-                message_vn: Truy cập không hợp lệ
+                errorCode: UNAUTHORIZED_ACCESS
+                messageEn: Unauthorized access
+                messageVn: Truy cập không hợp lệ
   
 components:
   schemas:
@@ -774,7 +786,7 @@ components:
       properties:
         id:
           type: string
-        driver_id: 
+        driverId: 
           type: string
         name:
           type: string
@@ -792,15 +804,15 @@ components:
       properties: 
         id:
           type: string
-        driver_id:
+        driverId:
           type: string
         type: 
           type: string
-        media_id:
+        mediaId:
           type: string
-        verified_status:
+        verifiedStatus:
           type: string
-        expires_at: 
+        expiresAt: 
           type: string
           format: date
 
@@ -809,9 +821,9 @@ components:
       properties:
         id:
           type: string
-        booking_id:
+        bookingId:
           type: string
-        driver_id: 
+        driverId: 
           type: string
         amount:
           type: number
@@ -837,11 +849,11 @@ components:
     ErrorResponse:
       type: object
       properties:
-        error_code:
+        errorCode:
           type: string
-        message_en:
+        messageEn:
           type: string
-        message_vn:
+        messageVn:
           type: string
 
   securitySchemes:
