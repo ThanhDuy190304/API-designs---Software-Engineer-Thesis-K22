@@ -1,6 +1,6 @@
 openapi: 3.0.0
 info:
-  title: Renter Service Public API
+  title: Renter API
   version: 1.0.0
 
 servers:
@@ -18,6 +18,7 @@ paths:
           name: page
           schema:
             type: integer
+            example: 1
           description: Current page number (default 1)
         - in: query
           name: itemsPerPage
@@ -39,21 +40,14 @@ paths:
                   pagination:
                     $ref: '#/components/schemas/Pagination'
         '403':
-          description: Unauthorized renter access
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              example:
-                errorCode: UNAUTHORIZED_ACCESS
-                messageEn: Unauthorized access
-                messageVn: Truy cập không hợp lệ
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
 
   /renters/{id}:
     get:
       summary: Get renter by ID
-      
-        
       parameters:
         - in: path
           name: id
@@ -68,25 +62,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/Renter'
         '403':
-          description: Unauthorized renter access
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              example:
-                errorCode: UNAUTHORIZED_ACCESS
-                messageEn: Unauthorized access
-                messageVn: Truy cập không hợp lệ
+          $ref: '#/components/responses/Unauthorized'
         '404':
-          description: Renter not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              example:
-                errorCode: RENTER_NOT_FOUND
-                messageEn: Renter not found
-                messageVn: Không tìm thấy người thuê
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
 
     patch:
       summary: Update renter info
@@ -109,35 +89,13 @@ paths:
         '204':
           description: Updated successfully
         '400':
-          description: Invalid input
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              example:
-                errorCode: INVALID_INPUT
-                messageEn: Invalid request parameters
-                messageVn: Tham số yêu cầu không hợp lệ
+          $ref: '#/components/responses/InvalidInput'
         '403':
-          description: Unauthorized renter access
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              example:
-                errorCode: UNAUTHORIZED_ACCESS
-                messageEn: Unauthorized access
-                messageVn: Truy cập không hợp lệ
+          $ref: '#/components/responses/Unauthorized'
         '404':
-          description: Renter not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              example:
-                errorCode: RENTER_NOT_FOUND
-                messageEn: Renter not found
-                messageVn: Không tìm thấy người thuê
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
 
 components:
   schemas:
@@ -152,6 +110,11 @@ components:
           type: string
         phone:
           type: string
+        birthDate:
+          type: string
+          format: date
+        cumulativePoints:
+          type: integer
 
     Pagination:
       type: object
@@ -175,6 +138,52 @@ components:
         messageVn:
           type: string
 
+  responses:
+
+    Unauthorized:
+      description: Unauthorized access
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            errorCode: UNAUTHORIZED_ACCESS
+            messageEn: Unauthorized access
+            messageVn: Truy cập không hợp lệ
+    
+    NotFound:
+      description: Renter not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            errorCode: RENTER_NOT_FOUND
+            messageEn: Renter not found
+            messageVn: Không tìm thấy người thuê
+    
+    InvalidInput:
+      description: Invalid request parameters
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            errorCode: INVALID_INPUT
+            messageEn: Invalid request parameters (format example)
+            messageVn: Tham số yêu cầu không hợp lệ (ghi ra định dạng mẫu)
+
+    ServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            errorCode: INTERNAL_SERVER_ERROR
+            messageEn: Internal server error
+            messageVn: Lỗi máy chủ nội bộ
+  
   securitySchemes:
     bearerAuth:
       type: http
