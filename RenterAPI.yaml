@@ -123,6 +123,8 @@ components:
         birthDate:
           type: string
           format: date
+        avatar:
+          type: string
         cumulativePoints:
           type: integer
 
