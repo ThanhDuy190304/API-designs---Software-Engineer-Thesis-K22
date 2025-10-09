@@ -1,9 +1,9 @@
 openapi: 3.0.0
 info:
-  title: Feedback Service Public API
+  title: Feedback API
   version: 1.0.0
-
-servers:
+  description: API for managing feedbacks in trips.
+servers:  
   - url: http://localhost:8080/api/v1
 
 security:
@@ -39,16 +39,9 @@ paths:
                   pagination:
                     $ref: '#/components/schemas/Pagination'
         '403':
-          description: Unauthorized renter access
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              example:
-                errorCode: UNAUTHORIZED_ACCESS
-                messageEn: Unauthorized access
-                messageVn: Truy cập không hợp lệ
-
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
     post:
       summary: Create a new feedback
       security:
@@ -80,15 +73,11 @@ paths:
         '201':
           description: Feedback created successfully
         '400':
-          description: Invalid input
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              example:
-                errorCode: INVALID_INPUT
-                messageEn: Invalid input data
-                messageVn: Dữ liệu đầu vào không hợp lệ
+          $ref: '#/components/responses/InvalidInput'
+        '403':
+          $ref: '#/components/responses/UnauthorizedError' 
+        '500':
+          $ref: '#/components/responses/ServerError'
 
     delete:
       summary: Delete feedback following filters
@@ -96,16 +85,10 @@ paths:
         '204':
           description: Selected feedback deleted successfully
         '403':
-          description: Unauthorized renter access
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              example:
-                errorCode: UNAUTHORIZED_ACCESS
-                messageEn: Unauthorized access
-                messageVn: Truy cập không hợp lệ
-      
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+        
 components:
   schemas:
     Feedback:
@@ -148,6 +131,56 @@ components:
         messageVn:
           type: string
 
+  parameters:
+    PageParam:
+      in: query
+      name: page
+      schema:
+        type: integer
+        example: 1
+      description: Current page number (default 1)
+
+    ItemsPerPageParam:
+      in: query
+      name: itemsPerPage
+      schema:
+        type: integer
+      description: Number of items per page (default 20)
+    
+  responses:
+    UnauthorizedError:
+      description: Unauthorized access
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            errorCode: UNAUTHORIZED_ACCESS
+            messageEn: Unauthorized access
+            messageVn: Truy cập không hợp lệ
+
+    ServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            errorCode: INTERNAL_SERVER_ERROR
+            messageEn: Lỗi nội bộ máy chủ
+            messageVn: Internal server error
+    
+    InvalidInput:
+      description: Invalid input
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            errorCode: INVALID_INPUT
+            messageEn: Invalid request parameters (format example)
+            messageVn: Tham số yêu cầu không hợp lệ (ghi ra định dạng mẫu)
+    
   securitySchemes:
     bearerAuth:
       type: http
