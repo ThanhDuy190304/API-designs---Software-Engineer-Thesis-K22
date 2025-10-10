@@ -1,0 +1,188 @@
+openapi: 3.0.0
+info:
+  title: Dispatching And Matching Driver API
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8080/api/v1
+
+security:
+  - bearerAuth: []
+
+paths:
+  /offers:
+    get:
+      summary: Get list of offers
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/ItemsPerPageParam'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  offers:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Offer'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+        '403':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    delete:
+      summary: Delete following offer by filters
+      parameters:
+        - in: query
+          name: bookingId
+          schema:
+            type: string
+          description: Booking ID to filter offers
+        - in: query
+          name: driverId
+          schema:
+            type: string
+          description: Driver ID to filter offers
+      responses:
+        '204':
+          description: Offer deleted successfully
+        '403':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /offers/{id}:
+    patch:
+      summary: Driver update offer status
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: Offer ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [REJECT, ACCEPT]
+      responses:
+        '204':
+          description: Offer updated successfully
+        '400':
+          $ref: '#/components/responses/InvalidInput'
+        '403':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+      
+
+components:
+  schemas:
+    Offer:
+      type: object
+      properties:
+        id:
+          type: string
+        bookingId:
+          type: string
+        driverId:
+          type: string
+        status:
+          type: string
+          enum: [REJECT, ACCEPT, PENDING]
+        sendAt:
+          type: string
+          format: date-time
+        expiresAt:
+          type: string
+          format: date-time
+    
+    Pagination:
+      type: object
+      properties:
+        totalItems:
+          type: integer
+        totalPages:
+          type: integer
+        currentPage:
+          type: integer
+        itemsPerPage:
+          type: integer
+
+    ErrorResponse:
+      type: object
+      properties:
+        errorCode:
+          type: string
+        messageEn:
+          type: string
+        messageVn:
+          type: string
+
+  responses:
+    UnauthorizedError:
+      description: Unauthorized access
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            errorCode: UNAUTHORIZED_ACCESS
+            messageEn: Unauthorized access
+            messageVn: Truy cập không hợp lệ
+
+    ServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            errorCode: INTERNAL_SERVER_ERROR
+            messageEn: Internal server error
+            messageVn: Lỗi nội bộ máy chủ
+    
+    InvalidInput:
+      description: Invalid input
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            errorCode: INVALID_INPUT
+            messageEn: Invalid request parameters (format example)
+            messageVn: Tham số yêu cầu không hợp lệ (ghi ra định dạng mẫu)
+
+  parameters:
+    PageParam:
+      in: query
+      name: page
+      schema:
+        type: integer
+        example: 1
+      description: Current page number (default 1)
+
+    ItemsPerPageParam:
+      in: query
+      name: itemsPerPage
+      schema:
+        type: integer
+      description: Number of items per page (default 20)
+    
+
+  securitySchemes:
+    bearerAuth:  
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
