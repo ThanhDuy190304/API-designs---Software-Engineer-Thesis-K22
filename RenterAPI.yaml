@@ -192,9 +192,9 @@ components:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
           example:
-            errorCode: INTERNAL_SERVER_ERROR
-            messageEn: Internal server error
-            messageVn: Lỗi máy chủ nội bộ
+            errorCode: SERVER_ERROR
+            messageEn: An unexpected error occurred
+            messageVn: Đã xảy ra lỗi không mong muốn
   
   securitySchemes:
     bearerAuth:
