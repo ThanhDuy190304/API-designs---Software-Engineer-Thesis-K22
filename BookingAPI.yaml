@@ -185,6 +185,20 @@ components:
         cancelAt:
           type: string
           format: date-time
+        baseAmount:
+          type: number
+        discountAmount:
+          type: number
+        totalAmount:
+          type: number
+        promotionId:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
 
     BookingForRenter:
       allOf:
@@ -286,7 +300,6 @@ components:
       description: Number of items per page (default 20)
 
   responses:
-
     ServerError:
       description: Internal server error
       content:

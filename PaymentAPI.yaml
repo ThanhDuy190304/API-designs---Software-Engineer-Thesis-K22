@@ -1,0 +1,309 @@
+openapi: 3.0.0
+info:
+  title: Payment API
+  version: 1.0.0
+
+servers:  
+  - url: http://localhost:8080/api/v1
+
+security:
+  - bearerAuth: []
+
+paths:
+  /booking-payments:
+    get: 
+      summary: Get list of booking payments
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/ItemsPerPageParam'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  bookingPayments:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/BookingPayment'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+        '403':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+    post:
+      summary: Create a new booking payment
+      description: Creates a booking payment using the provided `bookingId` and `userPaymentMethodId`. 
+                  Additional details such as base amount, discount amount, total amount, and promotion ID are retrieved automatically from the Booking Service. 
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - bookingId
+                - userPaymentMethodId
+              properties:
+                bookingId:
+                  type: string
+                userPaymentMethodId:
+                  type: string
+      responses:
+        '201':
+          description: Booking payment created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookingPayment'
+        '400':
+          $ref: '#/components/responses/InvalidInput'
+        '403':
+          $ref: '#/components/responses/UnauthorizedError'
+        '409':
+          $ref: '#/components/responses/ConflictError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  
+  /driver-wallet-payments:
+    get:
+      summary: Get list of driver wallet payments
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/ItemsPerPageParam'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  driverWalletPayments:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/DriverWalletPayment'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+        '403':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError' 
+  
+  /drivers/{driverId}/wallet-payments:
+    get:
+      summary: Get payment history for a specific driver
+      parameters:
+        - in: path
+          name: driverId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  driverWalletPayments:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/DriverWalletPayment'
+        '403':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+    
+    post:
+      summary: Create a new driver wallet payment for a specific driver
+      description: Creates a driver wallet payment (top-up or withdrawal) for the specified driver using the provided `userPaymentMethodId`, `amount`, and `type`.
+      parameters:
+        - in: path
+          name: driverId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - userPaymentMethodId
+                - amount
+                - type
+              properties:
+                userPaymentMethodId:
+                  type: string
+                amount:
+                  type: number
+                type:
+                  type: string
+                  enum: [TOPUP, WITHDRAWAL]
+      responses:
+        '201':
+          description: Driver wallet payment created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DriverWalletPayment'
+        '400':
+          $ref: '#/components/responses/InvalidInput'
+        '403':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+components:
+
+  schemas:
+    BookingPayment:
+      type: object
+      properties:
+        id:
+          type: string
+        renterId:
+          type: string
+        bookingId:
+          type: string
+        userPaymentMethodId:
+          type: string
+        baseAmount:
+          type: number
+        discountAmount:
+          type: number
+        totalAmount:
+          type: number
+        promotionId:
+          type: string
+        type:
+          type: string
+          enum: [CHARGE , REFUND]
+        status:
+          type: string
+          enum: [PENDING, FAILED, CAPTURED , REFUNDED]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        
+    DriverWalletPayment:
+      type: object
+      properties:
+        id:
+          type: string
+        driverId:
+          type: string
+        userPaymentMethodId:
+          type: string
+        amount:
+          type: number
+        type:
+          type: string
+          enum: [TOPUP, WITHDRAWAL]
+        status:
+          type: string
+          enum: [PENDING, FAILED, CAPTURED]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    Pagination:
+      type: object
+      properties:
+        totalItems:
+          type: integer
+        totalPages:
+          type: integer
+        currentPage:
+          type: integer
+        itemsPerPage:
+          type: integer
+
+    ErrorResponse:
+      type: object
+      properties:
+        errorCode:
+          type: string
+        messageEn:
+          type: string
+        messageVn:
+          type: string
+    
+  parameters:
+    PageParam:
+      in: query
+      name: page
+      schema:
+        type: integer
+        example: 1
+      description: Current page number (default 1)
+
+    ItemsPerPageParam:
+      in: query
+      name: itemsPerPage
+      schema:
+        type: integer
+      description: Number of items per page (default 20)
+    
+  responses:
+    UnauthorizedError:
+      description: Unauthorized access
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            errorCode: UNAUTHORIZED_ACCESS
+            messageEn: Unauthorized access
+            messageVn: Truy cập không hợp lệ
+
+    ServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            errorCode: SERVER_ERROR
+            messageEn: An unexpected error occurred
+            messageVn: Đã xảy ra lỗi không mong muôn
+    
+    InvalidInput:
+      description: Invalid input
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            errorCode: INVALID_INPUT
+            messageEn: Invalid request parameters (format example)
+            messageVn: Tham số yêu cầu không hợp lệ (ghi ra định dạng mẫu)
+    
+    ConflictError:
+      description: Conflict error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            errorCode: Conflict_Error
+            messageEn: The payment for for this trip already being processed
+            messageVn: Yêu cầu thanh toán cho chuyến đi này đang được xử lý
+    
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
