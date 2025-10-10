@@ -12,6 +12,28 @@ security:
 
 paths:
   feedback/bookings/{bookingId}:
+    get:
+      summary: Get feedback for a specific booking
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: bookingId
+          required: true
+          schema:
+            type: string
+          description: ID of the booking to retrieve feedback for
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Feedback'
+        '403':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
     post:
       summary: Create feedback for a specific booking
       security:
