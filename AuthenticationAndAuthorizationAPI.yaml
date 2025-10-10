@@ -1,0 +1,184 @@
+openapi: 3.0.0
+info:
+  title: Authentication & Authorization API
+  version: '1.0.0'
+  description: API for user authentication and authorization (roles/permissions)
+
+servers:
+  - url: http://localhost:8080/api/v1
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  responses:
+    InvalidInput:
+      description: Invalid input
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            errorCode: INVALID_INPUT
+            messageEn: Invalid request parameters
+            messageVn: Tham số yêu cầu không hợp lệ
+    ServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            errorCode: SERVER_ERROR
+            messageEn: An unexpected error occurred
+            messageVn: Đã xảy ra lỗi không mong muốn
+
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        errorCode:
+          type: string
+        messageEn:
+          type: string
+        messageVn:
+          type: string
+
+paths:
+
+  # ------------------------
+  # 🔐 AUTHENTICATION - CUSTOMER
+  # ------------------------
+  /auth/customers/login:
+    post:
+      summary: Customer login (email/password or social login)
+  /auth/customers/register:
+    post:
+      summary: Customer register account
+  /auth/customers/refresh:
+    post:
+      summary: Refresh customer access token
+  /auth/customers/logout:
+    post:
+      summary: Customer logout
+  /auth/customers/forget-password:
+    post:
+      summary: Customer forgot password (request reset link)
+  /auth/customers/change-password:
+    patch:
+      summary: Customer change password (authenticated user)
+      security:
+        - bearerAuth: []
+
+  # ------------------------
+  # 🔐 AUTHENTICATION - MANAGER / ADMIN
+  # ------------------------
+  /admin/auth/managers/login:
+    post:
+      summary: Manager login (admin panel)
+  /admin/auth/managers/refresh:
+    post:
+      summary: Refresh manager access token
+      security:
+        - bearerAuth: []
+  /admin/auth/managers/logout:
+    post:
+      summary: Manager logout
+      security:
+        - bearerAuth: []
+  /admin/auth/managers/forget-password:
+    post:
+      summary: Manager forgot password (reset via email)
+  /admin/auth/managers/change-password:
+    patch:
+      summary: Manager change password (authenticated admin)
+      security:
+        - bearerAuth: []
+
+  # ------------------------
+  # ⚙️ AUTHORIZATION - ADMIN (PERMISSIONS / ROLES)
+  # ------------------------
+  /admin/auth/permissions:
+    get:
+      summary: Get all permissions
+      security:
+        - bearerAuth: []
+    post:
+      summary: Create a new permission
+      security:
+        - bearerAuth: []
+  /admin/auth/permissions/{id}:
+    get:
+      summary: Get permission by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      security:
+        - bearerAuth: []
+    patch:
+      summary: Update permission by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      security:
+        - bearerAuth: []
+    delete:
+      summary: Delete permission by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      security:
+        - bearerAuth: []
+
+  /admin/auth/roles:
+    get:
+      summary: Get all roles
+      security:
+        - bearerAuth: []
+    post:
+      summary: Create a new role
+      security:
+        - bearerAuth: []
+  /admin/auth/roles/{id}:
+    get:
+      summary: Get role by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      security:
+        - bearerAuth: []
+    patch:
+      summary: Update role by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      security:
+        - bearerAuth: []
+    delete:
+      summary: Delete role by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      security:
+        - bearerAuth: []

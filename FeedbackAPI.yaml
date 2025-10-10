@@ -11,7 +11,7 @@ security:
   - bearerAuth: []
 
 paths:
-  /bookings/{bookingId}/feedback:
+  feedback/bookings/{bookingId}:
     post:
       summary: Create feedback for a specific booking
       security:
