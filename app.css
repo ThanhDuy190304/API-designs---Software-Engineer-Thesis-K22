@@ -1,0 +1,49 @@
+/* app.css */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    background-color: #ffffff; /* nền trắng */
+    padding: 40px 20px;
+}
+
+.header {
+    text-align: center;
+    font-size: 48px;
+    font-weight: 700;
+    background: linear-gradient(90deg, #DC2626 0%, #CA8A04 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 40px;
+}
+
+.buttons-container {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+@media (min-width: 768px) {
+    .buttons-container {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+.btn {
+    background-color: #00796b;
+    color: white;
+    text-decoration: none;
+    padding: 16px 20px;
+    text-align: center;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 500;
+    transition: transform 0.2s, background-color 0.2s;
+    display: block;
+}
+
+.btn:hover {
+    background-color: #004d40;
+    transform: scale(1.05);
+}
