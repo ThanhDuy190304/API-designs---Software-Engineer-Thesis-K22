@@ -1,0 +1,68 @@
+
+openapi: 3.0.0
+info:
+  title: Authorization API
+  version: 1.0.0
+  description: API for managing user roles and permissions
+
+servers:
+  - url: http://localhost:8080/api/v1
+security:
+  - bearerAuth: []
+
+paths:
+  # ------------------------
+  # ⚙️ ADMIN AUTHORIZATION (Permissions / Roles)
+  # ------------------------
+  /admin/auth/permissions:
+    get:
+      summary: Get all permissions
+    post:
+      summary: Create a new permission
+
+  /admin/auth/permissions/{id}:
+    get:
+      summary: Get permission by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+    patch:
+      summary: Update permission by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+    delete:
+      summary: Delete permission by ID
+
+  /admin/auth/roles:
+    get:
+      summary: Get all roles
+    post:
+      summary: Create a new role
+
+  /admin/auth/roles/{id}:
+    get:
+      summary: Get role by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+    patch:
+      summary: Update role by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+    delete:
+      summary: Delete role by ID
+

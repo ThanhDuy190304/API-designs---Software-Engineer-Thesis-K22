@@ -1,0 +1,68 @@
+openapi: 3.0.0
+info:
+  title: Management API
+  version: 1.0.0
+  description: API for managing customers and managers (admin panel)
+
+servers:
+  - url: http://localhost:8080/api/v1
+
+security:
+  - bearerAuth: []
+  
+paths:  
+
+  # ------------------------
+  # 👥 ADMIN MANAGEMENT (Customers & Managers)
+  # ------------------------
+  /admin/customers:
+    get:
+      summary: Get all customers
+    post:
+      summary: Create new customer (by admin)
+
+  /admin/customers/{id}:
+    get:
+      summary: Get customer by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+    patch:
+      summary: Update customer by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+    delete:
+      summary: Delete customer by ID
+
+  /admin/managers:
+    get:
+      summary: Get all managers
+    post:
+      summary: Create new manager
+
+  /admin/managers/{id}:
+    get:
+      summary: Get manager by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+    patch:
+      summary: Update manager by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+    delete:
+      summary: Delete manager by ID

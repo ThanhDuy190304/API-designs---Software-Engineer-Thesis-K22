@@ -478,7 +478,7 @@ paths:
         '500':
           $ref: '#/components/responses/ServerError'
 
-  /earnings:
+  /admin/earnings:
     get:
       summary: Get earnings summary of drivers
       

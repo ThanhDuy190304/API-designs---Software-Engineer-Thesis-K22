@@ -11,7 +11,43 @@ security:
   - bearerAuth: []
 
 paths:
-  /feedback:
+  /bookings/{bookingId}/feedback:
+    post:
+      summary: Create feedback for a specific booking
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: bookingId
+          required: true
+          schema:
+            type: string
+          description: ID of the booking to provide feedback for
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                comment:
+                  type: string
+                rating:
+                  type: integer
+              required:
+                - comment
+                - rating
+      responses:
+        '201':
+          description: Feedback created successfully
+        '400':
+          $ref: '#/components/responses/InvalidInput'
+        '403':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /admin/feedback:
     get:
       summary: Get list of feedbacks
       parameters:
@@ -43,43 +79,7 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '500':
           $ref: '#/components/responses/ServerError'
-    post:
-      summary: Create a new feedback
-      security:
-        - bearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                renterId:
-                  type: string
-                driverId:
-                  type: string
-                bookingId:
-                  type: string
-                comment:
-                  type: string
-                rating:
-                  type: integer
-              required:
-                - renterId
-                - driverId
-                - bookingId
-                - comment
-                - rating
-      responses:
-        '201':
-          description: Feedback created successfully
-        '400':
-          $ref: '#/components/responses/InvalidInput'
-        '403':
-          $ref: '#/components/responses/UnauthorizedError' 
-        '500':
-          $ref: '#/components/responses/ServerError'
-
+ 
     delete:
       summary: Delete feedback following filters
       responses:
