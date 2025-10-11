@@ -1,4 +1,4 @@
-body {
+/* body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     margin: 0;
     background-color: #f8f9fa;
@@ -59,6 +59,95 @@ body {
 
     .button-group {
         grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+.btn {
+    background: linear-gradient(135deg, #DC2626 0%, #CA8A04 100%);
+    color: white;
+    text-decoration: none;
+    padding: 18px 24px;
+    text-align: center;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    display: block;
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.2);
+    position: relative;
+    overflow: hidden;
+}
+
+.btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(220, 38, 38, 0.3);
+}
+
+.btn:hover::before {
+    left: 100%;
+}
+
+.btn:active {
+    transform: translateY(-1px);
+} */
+
+
+
+
+
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    background-color: #f8f9fa;
+    padding: 40px 20px;
+    background-image: linear-gradient(135deg, rgba(220, 38, 38, 0.05) 0%, rgba(202, 138, 4, 0.05) 100%);
+    min-height: 100vh;
+}
+
+.header-container {
+    text-align: center;
+    margin-bottom: 50px;
+    position: relative;
+}
+
+.header {
+    display: inline-block;
+    font-size: 48px;
+    font-weight: 800;
+    background: linear-gradient(90deg, #DC2626 0%, #CA8A04 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 10px;
+    position: relative;
+    z-index: 2;
+}
+
+.buttons-container {
+    display: grid;
+    grid-template-columns: 1fr;
+    /* Mặc định 1 cột cho màn hình nhỏ */
+    gap: 20px;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+@media (min-width: 768px) {
+    .buttons-container {
+        grid-template-columns: repeat(3, 1fr);
+        /* 3 cột cho màn hình lớn */
     }
 }
 
