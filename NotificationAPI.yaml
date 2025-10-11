@@ -1,0 +1,151 @@
+openapi: 3.0.0
+info:
+  title: Notification API
+  version: 1.0.0
+  description: Provides endpoints to manage notifications for users.
+
+servers:  
+  - url: http://localhost:8080/api/v1
+
+security:
+  - bearerAuth: []
+
+paths:
+  /notifications:
+    post:
+      summary: Create a new notification
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userId:
+                  type: string
+                message:
+                  type: string
+                type:
+                  type: string
+              required:
+                - message
+                - type
+
+      responses:
+        '201':
+          description: Notification created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notification'
+        '403':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+   
+  /notifications/{notificationId}:
+    delete:
+      summary: Delete a specific notification
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: notificationId
+          required: true
+          schema:
+            type: string
+          description: ID of the notification to delete
+      responses:
+        '204':
+          description: Notification deleted successfully
+        '403':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /notifications/users/{userId}:
+    get: 
+      summary: Get notifications for a specific user
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+          description: ID of the user to retrieve notifications for
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notification'
+        '403':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+    
+
+components:
+  schemas:
+    Notification:
+      type: object
+      properties:
+        id:
+          type: string
+        createAt:
+          type: string
+          format: date-time
+        
+
+    ErrorResponse:
+      type: object
+      properties:
+        errorCode:
+          type: string
+        messageEn:
+          type: string
+        messageVn:
+          type: string
+
+  responses:
+    UnauthorizedError:
+      description: Unauthorized access
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            errorCode: UNAUTHORIZED_ACCESS
+            messageEn: Unauthorized access
+            messageVn: Truy cập không hợp lệ
+
+    ServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            errorCode: SERVER_ERROR
+            messageEn: An unexpected error occurred
+            messageVn: Đã xảy ra lỗi không mong muốn
+    
+    InvalidInput:
+      description: Invalid input
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            errorCode: INVALID_INPUT
+            messageEn: Invalid request parameters (format example)
+            messageVn: Tham số yêu cầu không hợp lệ (ghi ra định dạng mẫu)
+    
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
