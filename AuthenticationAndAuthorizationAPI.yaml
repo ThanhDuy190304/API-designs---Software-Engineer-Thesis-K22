@@ -76,23 +76,23 @@ paths:
   # ------------------------
   # 🔐 AUTHENTICATION - MANAGER / ADMIN
   # ------------------------
-  /admin/auth/managers/login:
+  /auth/managers/login:
     post:
       summary: Manager login (admin panel)
-  /admin/auth/managers/refresh:
+  /auth/managers/refresh:
     post:
       summary: Refresh manager access token
       security:
         - bearerAuth: []
-  /admin/auth/managers/logout:
+  /auth/managers/logout:
     post:
       summary: Manager logout
       security:
         - bearerAuth: []
-  /admin/auth/managers/forget-password:
+  /auth/managers/forget-password:
     post:
       summary: Manager forgot password (reset via email)
-  /admin/auth/managers/change-password:
+  /auth/managers/change-password:
     patch:
       summary: Manager change password (authenticated admin)
       security:
@@ -101,7 +101,7 @@ paths:
   # ------------------------
   # ⚙️ AUTHORIZATION - ADMIN (PERMISSIONS / ROLES)
   # ------------------------
-  /admin/auth/permissions:
+  /auth/permissions:
     get:
       summary: Get all permissions
       security:
@@ -110,7 +110,7 @@ paths:
       summary: Create a new permission
       security:
         - bearerAuth: []
-  /admin/auth/permissions/{id}:
+  /auth/permissions/{id}:
     get:
       summary: Get permission by ID
       parameters:
@@ -142,7 +142,7 @@ paths:
       security:
         - bearerAuth: []
 
-  /admin/auth/roles:
+  /auth/roles:
     get:
       summary: Get all roles
       security:
@@ -151,7 +151,7 @@ paths:
       summary: Create a new role
       security:
         - bearerAuth: []
-  /admin/auth/roles/{id}:
+  /auth/roles/{id}:
     get:
       summary: Get role by ID
       parameters:

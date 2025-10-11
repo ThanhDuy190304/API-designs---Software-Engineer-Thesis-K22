@@ -10,189 +10,189 @@ security:
   - bearerAuth: []
 
 paths:
-  /bookings/{bookingId}/payments:
-    get: 
-      summary: Get payment history for a specific booking
-      parameters:
-        - in: path
-          name: bookingId
-          required: true
-          schema:
-            type: string
-        - $ref: '#/components/parameters/PageParam'
-        - $ref: '#/components/parameters/ItemsPerPageParam'
-      responses:
-        '200':
-          description: Successful response
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  bookingPayments:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/BookingPayment'
-                  pagination:
-                    $ref: '#/components/schemas/Pagination'
-        '403':
-          $ref: '#/components/responses/UnauthorizedError'
-        '500':
-          $ref: '#/components/responses/ServerError'
-    
-    post:
-      summary: Create a new booking payment
-      description: Creates a booking payment using the provided `bookingId` and `userPaymentMethodId`. 
-                  Additional details such as base amount, discount amount, total amount, and promotion ID are retrieved automatically from the Booking Service. 
-      parameters:
-        - in: path
-          name: bookingId
-          required: true
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
+    /payments/bookings/{bookingId}:
+      get: 
+        summary: Get payment history for a specific booking
+        parameters:
+          - in: path
+            name: bookingId
+            required: true
             schema:
-              type: object
-              required:
-                - userPaymentMethodId
-              properties:
-                userPaymentMethodId:
-                  type: string
-      responses:
-        '201':
-          description: Booking payment created successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/BookingPayment'
-        '400':
-          $ref: '#/components/responses/InvalidInput'
-        '403':
-          $ref: '#/components/responses/UnauthorizedError'
-        '409':
-          $ref: '#/components/responses/ConflictError'
-        '500':
-          $ref: '#/components/responses/ServerError'
-  
- 
-  /drivers/{driverId}/wallet-transactions:
-    get:
-      summary: Get payment history for a specific driver
-      parameters:
-        - in: path
-          name: driverId
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Successful response
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  DriverWalletTransactions:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/DriverWalletTransaction'
-        '403':
-          $ref: '#/components/responses/UnauthorizedError'
-        '500':
-          $ref: '#/components/responses/ServerError'
-    
-    post:
-      summary: Create a new driver wallet payment for a specific driver
-      description: Creates a driver wallet payment (top-up or withdrawal) for the specified driver using the provided `userPaymentMethodId`, `amount`, and `type`.
-      parameters:
-        - in: path
-          name: driverId
-          required: true
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
+              type: string
+          - $ref: '#/components/parameters/PageParam'
+          - $ref: '#/components/parameters/ItemsPerPageParam'
+        responses:
+          '200':
+            description: Successful response
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    bookingPayments:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/BookingPayment'
+                    pagination:
+                      $ref: '#/components/schemas/Pagination'
+          '403':
+            $ref: '#/components/responses/UnauthorizedError'
+          '500':
+            $ref: '#/components/responses/ServerError'
+      
+      post:
+        summary: Create a new booking payment
+        description: Creates a booking payment using the provided `bookingId` and `userPaymentMethodId`. 
+                    Additional details such as base amount, discount amount, total amount, and promotion ID are retrieved automatically from the Booking Service. 
+        parameters:
+          - in: path
+            name: bookingId
+            required: true
             schema:
-              type: object
-              required:
-                - userPaymentMethodId
-                - amount
-                - type
-              properties:
-                userPaymentMethodId:
-                  type: string
-                amount:
-                  type: number
-                type:
-                  type: string
-                  enum: [TOPUP, WITHDRAWAL]
-      responses:
-        '201':
-          description: Driver wallet payment created successfully
+              type: string
+        requestBody:
+          required: true
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DriverWalletTransaction'
-        '400':
-          $ref: '#/components/responses/InvalidInput'
-        '403':
-          $ref: '#/components/responses/UnauthorizedError'
-        '500':
-          $ref: '#/components/responses/ServerError'
+                type: object
+                required:
+                  - userPaymentMethodId
+                properties:
+                  userPaymentMethodId:
+                    type: string
+        responses:
+          '201':
+            description: Booking payment created successfully
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/BookingPayment'
+          '400':
+            $ref: '#/components/responses/InvalidInput'
+          '403':
+            $ref: '#/components/responses/UnauthorizedError'
+          '409':
+            $ref: '#/components/responses/ConflictError'
+          '500':
+            $ref: '#/components/responses/ServerError'
+    
   
-  /admin/driver-wallet-transactions:
-    get:
-      summary: Get list of driver wallet payments
-      parameters:
-        - $ref: '#/components/parameters/PageParam'
-        - $ref: '#/components/parameters/ItemsPerPageParam'
-      responses:
-        '200':
-          description: Successful response
+    /payments/wallets/drivers/{driverId}:
+      get:
+        summary: Get payment history for a specific driver
+        parameters:
+          - in: path
+            name: driverId
+            required: true
+            schema:
+              type: string
+        responses:
+          '200':
+            description: Successful response
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    DriverWalletTransactions:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/DriverWalletTransaction'
+          '403':
+            $ref: '#/components/responses/UnauthorizedError'
+          '500':
+            $ref: '#/components/responses/ServerError'
+      
+      post:
+        summary: Create a new driver wallet payment for a specific driver
+        description: Creates a driver wallet payment (top-up or withdrawal) for the specified driver using the provided `userPaymentMethodId`, `amount`, and `type`.
+        parameters:
+          - in: path
+            name: driverId
+            required: true
+            schema:
+              type: string
+        requestBody:
+          required: true
           content:
             application/json:
               schema:
                 type: object
+                required:
+                  - userPaymentMethodId
+                  - amount
+                  - type
                 properties:
-                  DriverWalletTransactions:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/DriverWalletTransaction'
-                  pagination:
-                    $ref: '#/components/schemas/Pagination'
-        '403':
-          $ref: '#/components/responses/UnauthorizedError'
-        '500':
-          $ref: '#/components/responses/ServerError' 
-  /admin/booking-payments:
-    get:
-      summary: Get list of booking payments
-      parameters:
-        - $ref: '#/components/parameters/PageParam'
-        - $ref: '#/components/parameters/ItemsPerPageParam'
-      responses:
-        '200':
-          description: Successful response
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  bookingPayments:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/BookingPayment'
-                  pagination:
-                    $ref: '#/components/schemas/Pagination'
-        '403':
-          $ref: '#/components/responses/UnauthorizedError'
-        '500':
-          $ref: '#/components/responses/ServerError'
+                  userPaymentMethodId:
+                    type: string
+                  amount:
+                    type: number
+                  type:
+                    type: string
+                    enum: [TOPUP, WITHDRAWAL]
+        responses:
+          '201':
+            description: Driver wallet payment created successfully
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/DriverWalletTransaction'
+          '400':
+            $ref: '#/components/responses/InvalidInput'
+          '403':
+            $ref: '#/components/responses/UnauthorizedError'
+          '500':
+            $ref: '#/components/responses/ServerError'
+    
+    /payments/admin/wallets:
+      get:
+        summary: Get list of driver wallet payments
+        parameters:
+          - $ref: '#/components/parameters/PageParam'
+          - $ref: '#/components/parameters/ItemsPerPageParam'
+        responses:
+          '200':
+            description: Successful response
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    DriverWalletTransactions:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/DriverWalletTransaction'
+                    pagination:
+                      $ref: '#/components/schemas/Pagination'
+          '403':
+            $ref: '#/components/responses/UnauthorizedError'
+          '500':
+            $ref: '#/components/responses/ServerError' 
+    /payments/admin/bookings:
+      get:
+        summary: Get list of booking payments
+        parameters:
+          - $ref: '#/components/parameters/PageParam'
+          - $ref: '#/components/parameters/ItemsPerPageParam'
+        responses:
+          '200':
+            description: Successful response
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    bookingPayments:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/BookingPayment'
+                    pagination:
+                      $ref: '#/components/schemas/Pagination'
+          '403':
+            $ref: '#/components/responses/UnauthorizedError'
+          '500':
+            $ref: '#/components/responses/ServerError'
 
 components:
 

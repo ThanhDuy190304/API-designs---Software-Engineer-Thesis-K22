@@ -15,13 +15,13 @@ paths:
   # ------------------------
   # 👥 ADMIN MANAGEMENT (Customers & Managers)
   # ------------------------
-  /admin/customers:
+  /users/admin/customers:
     get:
       summary: Get all customers
     post:
       summary: Create new customer (by admin)
 
-  /admin/customers/{id}:
+  /users/admin/customers/{id}:
     get:
       summary: Get customer by ID
       parameters:
@@ -41,13 +41,13 @@ paths:
     delete:
       summary: Delete customer by ID
 
-  /admin/managers:
+  /users/admin/managers:
     get:
       summary: Get all managers
     post:
       summary: Create new manager
 
-  /admin/managers/{id}:
+  /users/admin/managers/{id}:
     get:
       summary: Get manager by ID
       parameters:
