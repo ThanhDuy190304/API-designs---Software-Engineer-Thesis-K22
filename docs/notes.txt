@@ -1,0 +1,3 @@
+- Put trong driver's profile, cho phép sửa trường nào
+- Put vehicle và document do driver hay admin làm
+- Trừ phí thuế như thế nào

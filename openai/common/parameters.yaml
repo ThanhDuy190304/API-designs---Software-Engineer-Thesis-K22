@@ -1,0 +1,18 @@
+components:
+
+  parameters:
+    
+    CurrentPage:
+      in: query
+      name: current page
+      schema:
+        type: integer
+      description: Current page number (default 1)
+
+    ItemsPerPage:
+      in: query
+      name: itemsPerPage
+      schema:
+        type: integer
+        example: 20
+      description: Number of items per page (default 20)

@@ -1,0 +1,121 @@
+openapi: 3.0.0
+info:
+  title: Media API
+  version: 1.0.0
+  description: Provides endpoints to manage media files in the system.
+
+security:
+  - bearerAuth: []
+
+tags:
+  - name: Media
+
+paths:
+  
+  /media:
+    post:
+      summary: Upload a media file
+      tags: [Media]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                path:
+                  type: string
+                  format: uri
+      responses:
+        '201':
+          description: Media file uploaded successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Media'
+        '400':
+          $ref: '../common/error_responses.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../common/error_responses.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../common/error_responses.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../common/error_responses.yaml#/components/responses/ResourceNotFound'
+        '422':
+          $ref: '../common/error_responses.yaml#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '../common/error_responses.yaml#/components/responses/InternalServerError'
+
+  /media/{id}:
+
+    get:
+      summary: Get media file details by ID
+      tags: [Media]
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID of the media file
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Media'
+        '401':
+          $ref: '../common/error_responses.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../common/error_responses.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../common/error_responses.yaml#/components/responses/ResourceNotFound'
+        '500':
+          $ref: '../common/error_responses.yaml#/components/responses/InternalServerError'
+
+    delete:
+      summary: Delete media by ID
+      tags: [Media]
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID of the media file
+      responses:
+        '204':
+          description: Media deleted successfully
+        '400':
+          $ref: '../common/error_responses.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../common/error_responses.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../common/error_responses.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../common/error_responses.yaml#/components/responses/ResourceNotFound'
+        '500':
+          $ref: '../common/error_responses.yaml#/components/responses/InternalServerError'
+        
+components:
+  schemas:
+    Media:
+      type: object
+      properties:
+        id:
+          type: string
+        filename:
+          type: string
+        size:
+          type: number
+        path:
+          type: string
+        type:
+          type: string
+        extension:
+          type: string
+    
+  securitySchemes:
+    bearerAuth:
+      $ref: '../common/security_schemes.yaml#/components/securitySchemes/bearerAuth'

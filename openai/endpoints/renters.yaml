@@ -1,0 +1,184 @@
+openapi: 3.0.0
+info:
+  title: Renter API
+  version: 1.0.0
+  description: |  
+    API for managing renter profiles and retrieving renter information.  
+    This API allows:
+    - Renters to view and update their own profiles.
+    - Administrators to retrieve all renters and specific renter profiles by ID.
+    
+    **Authentication**: All endpoints require JWT bearer token authentication.
+security:
+  - bearerAuth: []
+tags:
+  - name: Renter
+paths:
+
+  /renters:
+    get:
+      summary: Get all renters
+      description: |
+        **Required role:** ADMIN   
+        Retrieve all renters with pagination support. Only accessible by administrators.
+      tags: [Administrative operations]
+      parameters:
+        - $ref: '../common/parameters.yaml#/components/parameters/CurrentPage'
+        - $ref: '../common/parameters.yaml#/components/parameters/ItemsPerPage'
+      responses:
+        '200':
+          description: A list of all renters
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  renters:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/RenterForAdmin'
+                  pagination:
+                    $ref: '../common/schemas.yaml#/components/schemas/Pagination'
+        '401':
+          $ref: '../common/error_responses.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../common/error_responses.yaml#/components/responses/Forbidden'
+        '500':
+          $ref: '../common/error_responses.yaml#/components/responses/InternalServerError'
+
+  /renters/{id}:
+    get:
+      summary: Get renter profile by ID 
+      description: |
+        **Required role:** ADMIN   
+        Retrieve a specific renter's profile by their unique ID. Only accessible by administrators.
+      tags: [Administrative operations]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: The unique identifier of the renter
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RenterForAdmin'
+        '401':
+          $ref: '../common/error_responses.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../common/error_responses.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../common/error_responses.yaml#/components/responses/ResourceNotFound'
+        '500':
+          $ref: '../common/error_responses.yaml#/components/responses/InternalServerError'
+  
+  /renters/me:
+    get:
+      summary: Get current renter profile
+      tags: [Renter]
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Renter'
+        '401':
+          $ref: '../common/error_responses.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../common/error_responses.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../common/error_responses.yaml#/components/responses/ResourceNotFound'
+        '500':
+          $ref: '../common/error_responses.yaml#/components/responses/InternalServerError'
+
+    put:
+      summary: Update current renter profile
+      tags: [Renter]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: "John Doe"
+                birthDate:
+                  type: string
+                  format: date
+                  example: "1990-01-01"
+                avatar:
+                  type: string
+                  format: uri
+      responses:
+        '204':
+          description: Updated successfully
+        '400':
+          $ref: '../common/error_responses.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../common/error_responses.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../common/error_responses.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../common/error_responses.yaml#/components/responses/ResourceNotFound'
+        '422':
+          $ref: '../common/error_responses.yaml#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '../common/error_responses.yaml#/components/responses/InternalServerError'
+
+components:
+  schemas: 
+
+    Renter:
+      type: object
+      properties:
+        name:
+          type: string
+          example: "John Doe"
+        email:
+          type: string
+          format: email
+          example: "john.doe@example.com"
+        phone:
+          type: string
+          example: "+1234567890"
+        birthDate:
+          type: string
+          format: date
+          example: "1990-01-01"
+        avatar:
+          type: string
+          format: uri
+        cumulativePoints:
+          type: integer
+          example: 1500
+
+    RenterForAdmin:
+      allOf:
+        - $ref: '#/components/schemas/Renter'
+        - type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+            createdAt:
+              type: string
+              format: date-time
+              example: "2023-10-01T12:00:00Z"
+            updatedAt:
+              type: string
+              format: date-time
+              example: "2023-10-10T12:00:00Z"
+            isActive:
+              type: boolean
+              example: true
+
+  securitySchemes:
+    bearerAuth:
+      $ref: '../common/security_schemes.yaml#/components/securitySchemes/bearerAuth'

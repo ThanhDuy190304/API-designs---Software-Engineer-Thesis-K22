@@ -1,0 +1,145 @@
+openapi: 3.0.0
+info:
+  title: Ride Request API
+  version: 1.0.0
+  description: |
+    API endpoints for drivers to manage ride requests, including accepting or rejecting requests.
+    - **Drivers** can accept or reject ride requests sent to them.
+    - **Admins** can view all ride requests for monitoring purposes.
+    
+servers:
+  - url: http://localhost:8080/api/v1
+
+security:
+  - bearerAuth: []
+
+tags:
+  - name: Ride Requests
+
+paths:
+
+  /ride-requests:
+    get:
+      summary: Get all ride requests
+      description: |
+        Retrieve all ride requests with pagination support.
+        Mainly for administrative purposes.
+      tags: [Administrative Operations]
+      parameters:
+        - $ref: '../common/parameters.yaml#/components/parameters/CurrentPage'
+        - $ref: '../common/parameters.yaml#/components/parameters/ItemsPerPage'
+      responses:
+        '200':
+          description: A list of all ride requests
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  rideRequests:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/RideRequest'
+                  pagination:
+                    $ref: '../common/schemas.yaml#/components/schemas/Pagination'
+        '401':
+          $ref: '../common/error_responses.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../common/error_responses.yaml#/components/responses/Forbidden'
+        '500':
+          $ref: '../common/error_responses.yaml#/components/responses/InternalServerError'
+
+  /ride-requests/{id}:
+    patch:
+      summary: Update ride request status
+      description: |
+        Driver can accept or reject a ride request.
+      tags: [Ride Requests]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: The ID of the ride request to update
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: '#/components/schemas/RejectRideRequest'
+                - $ref: '#/components/schemas/AcceptRideRequest'
+      responses:
+        '200':
+          description: Ride request status updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RideRequest'
+        '400':
+          $ref: '../common/error_responses.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../common/error_responses.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../common/error_responses.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../common/error_responses.yaml#/components/responses/ResourceNotFound'
+        '422':
+          $ref: '../common/error_responses.yaml#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '../common/error_responses.yaml#/components/responses/InternalServerError'
+
+components:
+  schemas:
+    RideRequest:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        bookingId:
+          type: string
+          description: Reference to the original booking
+        status:
+          type: string
+          enum: [REJECTED, ACCEPTED, PENDING]
+          description: Current status of the ride request
+        sendAt:
+          type: string
+          format: date-time
+          description: When the request was sent to the driver
+        expiresAt:
+          type: string
+          format: date-time
+          description: When the request expires if not responded
+        driverId:
+          type: string
+          description: ID of the driver this request is sent to
+  
+
+    RejectRideRequest:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [REJECT]
+        reason:
+          type: string
+          description: Optional reason for rejection
+          enum: [TOO_FAR, NOT_AVAILABLE, OTHER]
+      required:
+        - status
+
+    AcceptRideRequest:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [ACCEPT]
+      required:
+        - status
+
+  securitySchemes:
+    bearerAuth:
+      $ref: '../common/security_schemes.yaml#/components/securitySchemes/bearerAuth'

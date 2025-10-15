@@ -1,0 +1,377 @@
+openapi: 3.0.0
+info:
+  title: Payment API
+  version: 1.0.0
+  description: |  
+    API for managing payments related to bookings and driver wallet transactions.  
+    This API allows:
+    - Administrators to retrieve all booking payments and driver wallet transactions.
+    - Users to manage their payment methods.
+    - Drivers to manage their wallet transactions.
+    
+    **Authentication**: All endpoints require JWT bearer token authentication.
+    
+servers:  
+  - url: http://localhost:8080/api/v1
+
+security:
+  - bearerAuth: []
+
+tags:
+  - name: Booking Payment
+  - name: Driver Wallet Transaction
+  - name: User Payment Methods
+
+paths:
+  /payments/bookings:
+    get:
+      summary: Get all booking payments
+      tags: [Administrative operations]
+      parameters:
+        - $ref: '../common/parameters.yaml#/components/parameters/CurrentPage'
+        - $ref: '../common/parameters.yaml#/components/parameters/ItemsPerPage'
+      responses:
+        '200':
+          description: A list of all payments
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  payments:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/BookingPayment'
+                  pagination:
+                    $ref: '../common/schemas.yaml#/components/schemas/Pagination'
+        '401':
+          $ref: '../common/error_responses.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../common/error_responses.yaml#/components/responses/Forbidden'
+        '500':
+          $ref: '../common/error_responses.yaml#/components/responses/InternalServerError'
+    
+  /payments/bookings/{bookingId}:
+    get:
+      summary: Get booking payment by booking ID
+      tags: [Booking Payment]
+      parameters:
+        - in: path
+          name: bookingId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Booking payment details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  payments:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/BookingPayment'
+        '401':
+          $ref: '../common/error_responses.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../common/error_responses.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../common/error_responses.yaml#/components/responses/ResourceNotFound'
+        '500':
+          $ref: '../common/error_responses.yaml#/components/responses/InternalServerError'
+
+    post:
+      summary: Create a new booking payment
+      tags: [Booking Payment]
+      description: Creates a booking payment using the provided `bookingId` and `userPaymentMethodId`. 
+                  Additional details such as base amount, discount amount, total amount, and promotion ID are retrieved automatically from the Booking Service. 
+      parameters:
+        - in: path
+          name: bookingId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - userPaymentMethodId
+              properties:
+                userPaymentMethodId:
+                  type: string
+                  format: uuid
+      responses:
+        '201':
+          description: Booking payment created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookingPayment'
+        '400':
+          $ref: '../common/error_responses.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../common/error_responses.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../common/error_responses.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../common/error_responses.yaml#/components/responses/ResourceNotFound'
+        '500':
+          $ref: '../common/error_responses.yaml#/components/responses/InternalServerError'
+
+  /payments/wallets/drivers:
+    get:
+      summary: Get all driver wallet transactions
+      tags: [Administrative operations]
+      parameters:
+        - $ref: '../common/parameters.yaml#/components/parameters/CurrentPage'
+        - $ref: '../common/parameters.yaml#/components/parameters/ItemsPerPage'
+      responses:
+        '200':
+          description: A list of all driver wallet transactions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  transactions:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/DriverWalletTransaction'
+                  pagination:
+                    $ref: '../common/schemas.yaml#/components/schemas/Pagination'
+        '401':
+          $ref: '../common/error_responses.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../common/error_responses.yaml#/components/responses/Forbidden'
+        '500':
+          $ref: '../common/error_responses.yaml#/components/responses/InternalServerError'
+
+  /payments/wallets/drivers/me:
+    
+    get:
+      summary: Get all wallet transactions for a driver
+      tags: [Driver Wallet Transaction]
+      parameters:
+        - $ref: '../common/parameters.yaml#/components/parameters/CurrentPage'
+        - $ref: '../common/parameters.yaml#/components/parameters/ItemsPerPage'
+      responses:
+        '200':
+          description: A list of all wallet transactions for the driver
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  transactions:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/DriverWalletTransaction'
+        '401':
+          $ref: '../common/error_responses.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../common/error_responses.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../common/error_responses.yaml#/components/responses/ResourceNotFound'
+        '500':
+          $ref: '../common/error_responses.yaml#/components/responses/InternalServerError'
+    
+    post:
+      summary: Create a new driver wallet transaction
+      tags: [Driver Wallet Transaction]
+      description: Creates a driver wallet transaction (TOPUP or WITHDRAWAL) using the provided `userPaymentMethodId`. 
+                  The `amount` must be a positive value. The transaction `type` must be either `TOPUP` or `WITHDRAWAL`.
+      
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - userPaymentMethodId
+                - amount
+                - type
+              properties:
+                userPaymentMethodId:
+                  type: string
+                  format: uuid
+                amount:
+                  type: number
+                  minimum: 1000
+
+                type:
+                  type: string
+                  enum: [TOPUP, WITHDRAWAL]
+      responses:
+        '201':
+          description: Driver wallet transaction created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DriverWalletTransaction'
+        '400':
+          $ref: '../common/error_responses.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../common/error_responses.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../common/error_responses.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../common/error_responses.yaml#/components/responses/ResourceNotFound'
+        '422':
+          $ref: '../common/error_responses.yaml#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '../common/error_responses.yaml#/components/responses/InternalServerError'
+
+  /payments/user-payment-methods/me:
+    get:
+      summary: Get all user payment methods for the current user
+      tags: [User Payment Methods]
+      responses:
+        '200':
+          description: A list of all user payment methods for the current user
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  userPaymentMethods:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/UserPaymentMethod'
+        '401':
+          $ref: '../common/error_responses.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../common/error_responses.yaml#/components/responses/Forbidden'
+        '500':
+          $ref: '../common/error_responses.yaml#/components/responses/InternalServerError'
+
+    post:
+      summary: Add a new user payment method for the current user
+      tags: [User Payment Methods]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - cardNumber
+                - cardHolderName
+                - expiryDate
+                - cvv
+              properties:
+                cardNumber:
+                  type: string
+                  example: "4111111111111111"
+                cardHolderName:
+                  type: string
+                  example: "John Doe"
+                expiryDate:
+                  type: string
+                  example: "12/25"
+                cvv:
+                  type: string
+                  example: "123"
+      responses:
+        '201':
+          description: User payment method created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPaymentMethod'
+              
+        '400':
+          $ref: '../common/error_responses.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../common/error_responses.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../common/error_responses.yaml#/components/responses/Forbidden'
+        '422':
+          $ref: '../common/error_responses.yaml#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '../common/error_responses.yaml#/components/responses/InternalServerError'
+
+components:
+
+  schemas:
+
+    BookingPayment:
+      type: object
+      description: Represents a payment attempt for a booking. 
+                    A booking may have multiple payment attempts due to failed transactions, retries, or refunds.
+      properties:
+        id:
+          type: string
+        renterId:
+          type: string
+          format: uuid
+        bookingId:
+          type: string
+          format: uuid
+        userPaymentMethodId:
+          type: string
+          format: uuid
+        baseAmount:
+          type: number
+        discountAmount:
+          type: number
+        totalAmount:
+          type: number
+        promotionId:
+          type: string
+        type:
+          type: string
+          enum: [CHARGE , REFUND]
+        status:
+          type: string
+          enum: [PENDING, FAILED, CAPTURED , REFUNDED]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        
+    DriverWalletTransaction:
+      type: object
+      properties:
+        id:
+          type: string
+        driverId:
+          type: string
+          format: uuid
+        userPaymentMethodId:
+          type: string
+          format: uuid
+        amount:
+          type: number
+        type:
+          type: string
+          enum: [TOPUP, WITHDRAWAL]
+        status:
+          type: string
+          enum: [PENDING, FAILED, CAPTURED]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    UserPaymentMethod:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+
+  securitySchemes:
+    bearerAuth:
+      $ref: '../common/security_schemes.yaml#/components/securitySchemes/bearerAuth'

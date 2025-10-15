@@ -1,0 +1,30 @@
+openapi: 3.0.0
+info:
+  title: Statistic API
+  version: 1.0.0
+  description: 
+
+security:
+  - bearerAuth: []
+
+tags:
+  - name: Statistics
+
+paths:
+  /statistics/driver-earnings/anomalies/earnings-deviation:
+    get:
+      tags: [Statistics]
+      summary: Retrieve driver earnings anomalies based on earnings deviation
+
+  /statistics/driver-earnings/benchmark/peer-comparison:
+    get:
+      tags: [Statistics]
+      summary: Retrieve driver earnings benchmark based on peer comparison
+  
+components:
+  
+  
+  
+  securitySchemes:
+    bearerAuth:
+      $ref: '../common/security_schemes.yaml#/components/securitySchemes/bearerAuth'

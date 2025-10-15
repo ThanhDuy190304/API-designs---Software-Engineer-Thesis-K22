@@ -1,0 +1,493 @@
+openapi: 3.0.0
+info:
+  title: Driver API
+  version: 1.0.0
+  description: |  
+    API for driver management within the application.
+    
+    **Driver Features:**
+    - View and manage personal profile information
+    - Manage vehicle details and documentation
+    - Track earnings and financial information
+    - Upload and manage required documents
+    
+    **Admin Features:**
+    - View all drivers with pagination
+    - Access detailed driver profiles and documents
+    - Update driver verification status
+    - Manage document approval process
+    
+    **Authentication**: All endpoints require JWT bearer token authentication.
+
+security:
+  - bearerAuth: []
+
+tags:
+  - name: Driver
+
+paths:
+  /drivers/me:
+    get:
+      summary: Get current driver profile
+      tags: [Driver]
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Driver'
+        '401':
+          $ref: '../common/error_responses.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../common/error_responses.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../common/error_responses.yaml#/components/responses/ResourceNotFound'
+        '500':
+          $ref: '../common/error_responses.yaml#/components/responses/InternalServerError'
+ 
+  /drivers/me/vehicles:
+    get:
+      summary: Get current driver's vehicles
+      tags: [Driver]
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  vehicles:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Vehicle'
+        '401':
+          $ref: '../common/error_responses.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../common/error_responses.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../common/error_responses.yaml#/components/responses/ResourceNotFound'
+        '500':
+          $ref: '../common/error_responses.yaml#/components/responses/InternalServerError'
+
+  /drivers/me/documents:
+    get:
+      summary: Get current driver's documents
+      tags: [Driver]
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  documents:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Document'
+        '401':
+          $ref: '../common/error_responses.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../common/error_responses.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../common/error_responses.yaml#/components/responses/ResourceNotFound'
+        '500':
+          $ref: '../common/error_responses.yaml#/components/responses/InternalServerError'
+
+    post:
+      summary: Upload a new document
+      tags: [Driver]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                type:
+                  type: string
+                  example: "driver_license"
+                mediaId:
+                  type: string
+                  format: uuid
+                  example: "550e8400-e29b-41d4-a716-446655440000"
+      responses:
+        '201':
+          description: Document uploaded successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Document'
+        '400':
+          $ref: '../common/error_responses.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../common/error_responses.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../common/error_responses.yaml#/components/responses/Forbidden'
+        '500':
+          $ref: '../common/error_responses.yaml#/components/responses/InternalServerError'
+
+  /drivers/me/earnings:
+    get:
+      summary: Get current driver's earnings
+      tags: [Driver]
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  earnings:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Earnings'
+        '401':
+          $ref: '../common/error_responses.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../common/error_responses.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../common/error_responses.yaml#/components/responses/ResourceNotFound'
+        '500':
+          $ref: '../common/error_responses.yaml#/components/responses/InternalServerError'
+
+  /drivers:
+    get:
+      summary: Get all drivers 
+      description: |
+        **Required role:** ADMIN   
+        Retrieve a list of all drivers. Only accessible by administrators.
+      tags: [Administrative operations]
+      parameters:
+        - $ref: '../common/parameters.yaml#/components/parameters/CurrentPage'
+        - $ref: '../common/parameters.yaml#/components/parameters/ItemsPerPage'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  drivers:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/DriverForAdmin'
+                  pagination:
+                    $ref: '../common/schemas.yaml#/components/schemas/Pagination'
+        '401':
+          $ref: '../common/error_responses.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../common/error_responses.yaml#/components/responses/Forbidden'
+        '500':
+          $ref: '../common/error_responses.yaml#/components/responses/InternalServerError'
+
+  /drivers/{id}:
+    get:
+      summary: Get driver profile by ID 
+      description: |
+        **Required role:** ADMIN   
+        Retrieve a specific driver's profile by their unique ID. Only accessible by administrators.
+      tags: [Administrative operations]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: The unique identifier of the driver
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DriverForAdmin'
+        '401':
+          $ref: '../common/error_responses.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../common/error_responses.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../common/error_responses.yaml#/components/responses/ResourceNotFound'
+        '500':
+          $ref: '../common/error_responses.yaml#/components/responses/InternalServerError'
+    
+    put:
+      summary: Update driver profile by ID
+      tags: [Administrative operations]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: The unique identifier of the driver
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                citizenId:
+                  type: string
+                  example: "D1234567"
+                avatar:
+                  type: string
+                  format: uri
+                  example: "https://example.com/avatar.jpg"
+      responses:
+        '204':
+          description: Updated successfully
+        '400':
+          $ref: '../common/error_responses.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../common/error_responses.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../common/error_responses.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../common/error_responses.yaml#/components/responses/ResourceNotFound'
+        '422':
+          $ref: '../common/error_responses.yaml#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '../common/error_responses.yaml#/components/responses/InternalServerError'
+
+  /drivers/{driverId}/documents:
+    get:
+      summary: Get a driver's documents by driver ID
+      tags: [Administrative operations]
+      parameters:
+        - in: path
+          name: driverId
+          required: true
+          schema:
+            type: string
+          description: The unique identifier of the driver
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  documents:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Document'
+        '401':
+          $ref: '../common/error_responses.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../common/error_responses.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../common/error_responses.yaml#/components/responses/ResourceNotFound'
+        '500':
+          $ref: '../common/error_responses.yaml#/components/responses/InternalServerError'
+  
+  /drivers/{driverId}/documents/{documentId}:
+    patch: 
+      summary: Update a driver's document verification status
+      tags: [Administrative operations]
+      parameters:
+        - in: path
+          name: driverId
+          required: true
+          schema:
+            type: string
+          description: The unique identifier of the driver
+        - in: path
+          name: documentId
+          required: true
+          schema:
+            type: string
+          description: The unique identifier of the document
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  example: "APPROVED"
+      responses:
+        '200':
+          description: Document updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Document'
+        '400':
+          $ref: '../common/error_responses.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../common/error_responses.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../common/error_responses.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../common/error_responses.yaml#/components/responses/ResourceNotFound'
+        '500':
+          $ref: '../common/error_responses.yaml#/components/responses/InternalServerError'
+
+components:
+  schemas:
+
+    Driver:
+      type: object
+      properties:
+
+        citizenId:
+          type: string
+          example: "D1234567"
+
+        name:
+          type: string
+          example: "Jane Smith"
+
+        birthDate:
+          type: string
+          format: date
+          example: "1990-05-15"
+
+        email:
+          type: string
+          format: email
+          example: ""
+        phone:
+          type: string
+          example: "+1234567890"
+
+        address:
+          type: string
+          example: "123 Main St, City, Country"
+
+        avatar:
+          type: string
+          format: uri
+          example: "https://example.com/avatar.jpg"
+        rating:
+          type: number
+          format: float
+          example: 4.8
+
+        numberOfRatings:
+          type: integer
+          example: 
+          
+        creditBalance:
+          type: number
+          format: int64
+          example: 2500
+
+        cashBalance:
+          type: number
+          format: int64
+          example: 300
+
+    Vehicle:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        license:
+          type: string
+        seats:
+          type: integer
+        category:
+          type: string
+        brand:
+          type: string
+        
+    Document:
+      type: object
+      properties: 
+        id:
+          type: string
+          format: uuid
+        type: 
+          type: string
+        mediaId:
+          type: string
+          format: uuid
+          description: "Reference to uploaded media file of the document."
+        status:
+          type: string
+          enum: [PENDING, APPROVED, REJECTED, EXPIRED]
+          description: |
+            Current status of the document:
+            - **PENDING**: Document has been submitted and is awaiting verification  
+            - **APPROVED**: Document has been reviewed and approved  
+            - **REJECTED**: Document has been reviewed and rejected  
+            - **EXPIRED**: Document is no longer valid due to expiration date
+        expiresAt: 
+          type: string
+          format: date
+          description: "Expiration date of the document, if applicable."
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    Earnings:
+      type: object
+      properties:
+        id: 
+          type: string
+          format: uuid
+        bookingId:
+          type: string
+          format: uuid
+        amount:
+          type: number
+          format: int64
+          description: Total fare amount charged to the customer
+        gross:
+          type: number
+          format: int64
+          description: Total earnings before platform commission
+        commission:
+          type: number
+          format: int64
+          description: Platform's commission fee
+        net:
+          type: number
+          format: int64
+          description: Earnings after deducting platform commission
+        createdAt:
+          type: string
+          format: date
+        updatedAt:
+          type: string
+          format: date
+    
+    DriverForAdmin:
+      allOf:
+        - $ref: '#/components/schemas/Driver'
+        - type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+            createdAt:
+              type: string
+              format: date-time
+              example: "2023-10-01T12:00:00Z"
+            updatedAt:
+              type: string
+              format: date-time
+              example: "2023-10-10T12:00:00Z"
+            isActive:
+              type: boolean
+              example: true
+
+  securitySchemes:
+    bearerAuth:
+      $ref: '../common/security_schemes.yaml#/components/securitySchemes/bearerAuth'

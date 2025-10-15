@@ -1,0 +1,503 @@
+asyncapi: '2.6.0'
+info:
+  title: 'Real-time Location Tracking API'
+  version: '1.0.0'
+  description: |
+    WebSocket API for real-time GPS location tracking only.
+    Focused purely on location data streaming between drivers and tracking clients.
+
+servers:
+  production:
+    url: wss://tracking-api.example.com
+    protocol: wss
+    description: Production tracking WebSocket server
+    security:
+      - bearerAuth: []
+
+  staging:
+    url: wss://staging-tracking-api.example.com  
+    protocol: wss
+    description: Staging server for testing
+    security:
+      - bearerAuth: []
+
+channels:
+  /tracking/{trackingId}/location:
+    description: |
+      Real-time GPS location tracking channel.
+      - Drivers publish high-frequency location updates (every 3-5 seconds)
+      - Tracking clients subscribe to receive live location stream
+      - Optimized for minimal latency and high frequency updates
+    parameters:
+      trackingId:
+        description: Unique tracking session identifier
+        schema:
+          type: string
+          pattern: '^TRK_[A-Za-z0-9]{12}$'
+          examples:
+            - 'TRK_ABC123DEF456'
+            - 'TRK_XYZ789UVW012'
+    subscribe:
+      summary: Subscribe to real-time location stream
+      description: Receive continuous GPS location updates for tracking
+      message:
+        oneOf:
+          - $ref: '#/components/messages/LocationBroadcast'
+          - $ref: '#/components/messages/TrackingHeartbeat'
+          - $ref: '#/components/messages/TrackingError'
+
+    publish:
+      summary: Publish GPS location data  
+      description: Drivers send frequent GPS coordinates and movement data
+      message:
+        oneOf:
+          - $ref: '#/components/messages/LocationUpdate'
+          - $ref: '#/components/messages/DriverHeartbeat'
+
+  /tracking/{trackingId}/events:
+    description: Channel for tracking-related events (start, stop, alerts)
+    parameters:
+      trackingId:
+        $ref: '#/components/parameters/TrackingId'
+    subscribe:
+      summary: Subscribe to tracking events
+      message:
+        oneOf:
+          - $ref: '#/components/messages/TrackingStarted'
+          - $ref: '#/components/messages/TrackingEnded'
+          - $ref: '#/components/messages/TrackingAlert'
+
+    publish:
+      summary: Publish tracking control events  
+      message:
+        oneOf:
+          - $ref: '#/components/messages/StartTracking'
+          - $ref: '#/components/messages/StopTracking'
+
+components:
+  parameters:
+    TrackingId:
+      description: Unique tracking session identifier
+      schema:
+        type: string
+        pattern: '^TRK_[A-Za-z0-9]{12}$'
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  messages:
+    # Core Location Messages
+    LocationUpdate:
+      name: locationUpdate
+      title: Location Update
+      summary: Raw GPS data from driver
+      description: High-frequency location updates published by driver app every 3-5 seconds
+      contentType: application/json
+      headers:
+        type: object
+        properties:
+          messageId:
+            type: string
+          timestamp:
+            type: string
+            format: date-time
+          driverId:
+            type: string
+        required:
+          - messageId
+          - timestamp
+          - driverId
+      payload:
+        type: object
+        properties:
+          trackingId:
+            type: string
+          coordinates:
+            type: object
+            properties:
+              lat:
+                type: number
+                minimum: -90
+                maximum: 90
+                examples: [10.762622]
+              lng:
+                type: number
+                minimum: -180
+                maximum: 180
+                examples: [106.660172]
+            required:
+              - lat
+              - lng
+          accuracy:
+            type: number
+            minimum: 0
+            description: GPS accuracy radius in meters
+          altitude:
+            type: number
+            description: Altitude in meters
+          speed:
+            type: number
+            minimum: 0
+            description: Speed in km/h
+          heading:
+            type: number
+            minimum: 0
+            maximum: 360
+            description: Direction in degrees from true north
+          timestamp:
+            type: string
+            format: date-time
+          battery:
+            type: number
+            minimum: 0
+            maximum: 100
+            description: Device battery percentage
+          gpsSignal:
+            type: string
+            enum:
+              - strong
+              - medium
+              - weak
+              - lost
+        required:
+          - trackingId
+          - coordinates
+          - timestamp
+          - accuracy
+      examples:
+        - payload:
+            trackingId: "TRK_ABC123DEF456"
+            coordinates:
+              lat: 10.762622
+              lng: 106.660172
+            accuracy: 5.2
+            altitude: 15.5
+            speed: 45.5
+            heading: 180
+            timestamp: "2024-01-15T10:30:00.000Z"
+            battery: 85
+            gpsSignal: "strong"
+
+    LocationBroadcast:
+      name: locationBroadcast
+      title: Location Broadcast
+      summary: Enhanced location data for tracking clients
+      description: Processed location data broadcast to all tracking subscribers
+      contentType: application/json
+      payload:
+        type: object
+        properties:
+          trackingId:
+            type: string
+          driverId:
+            type: string
+          position:
+            type: object
+            properties:
+              lat:
+                type: number
+              lng:
+                type: number
+              accuracy:
+                type: number
+            required:
+              - lat
+              - lng
+          movement:
+            type: object
+            properties:
+              speed:
+                type: number
+              heading:
+                type: number
+              distance:
+                type: number
+                description: Distance traveled since last update in meters
+            required:
+              - speed
+              - heading
+          timestamp:
+            type: string
+            format: date-time
+          nextUpdate:
+            type: string
+            format: date-time
+            description: Expected time of next location update
+          quality:
+            type: object
+            properties:
+              gpsSignal:
+                type: string
+              battery:
+                type: number
+              lastUpdateAge:
+                type: number
+                description: Seconds since last successful update
+        required:
+          - trackingId
+          - driverId
+          - position
+          - timestamp
+          - movement
+      examples:
+        - payload:
+            trackingId: "TRK_ABC123DEF456"
+            driverId: "DRV_789XYZ"
+            position:
+              lat: 10.762622
+              lng: 106.660172
+              accuracy: 5.2
+            movement:
+              speed: 45.5
+              heading: 180
+              distance: 63.2
+            timestamp: "2024-01-15T10:30:00.000Z"
+            nextUpdate: "2024-01-15T10:30:05.000Z"
+            quality:
+              gpsSignal: "strong"
+              battery: 85
+              lastUpdateAge: 3
+
+    # Tracking Control Messages
+    StartTracking:
+      name: startTracking
+      title: Start Tracking
+      summary: Initiate a tracking session
+      contentType: application/json
+      payload:
+        type: object
+        properties:
+          trackingId:
+            type: string
+          driverId:
+            type: string
+          vehicleId:
+            type: string
+          startTime:
+            type: string
+            format: date-time
+          expectedDuration:
+            type: number
+            description: Expected tracking duration in minutes
+        required:
+          - trackingId
+          - driverId
+          - startTime
+
+    StopTracking:
+      name: stopTracking
+      title: Stop Tracking
+      summary: Terminate a tracking session
+      contentType: application/json
+      payload:
+        type: object
+        properties:
+          trackingId:
+            type: string
+          reason:
+            type: string
+            enum:
+              - completed
+              - cancelled
+              - timeout
+              - error
+          endTime:
+            type: string
+            format: date-time
+          finalPosition:
+            $ref: '#/components/schemas/Coordinates'
+        required:
+          - trackingId
+          - reason
+          - endTime
+
+    # Tracking Events
+    TrackingStarted:
+      name: trackingStarted
+      title: Tracking Started
+      summary: Notification that tracking session has begun
+      contentType: application/json
+      payload:
+        type: object
+        properties:
+          trackingId:
+            type: string
+          driverId:
+            type: string
+          startTime:
+            type: string
+            format: date-time
+          initialPosition:
+            $ref: '#/components/schemas/Coordinates'
+        required:
+          - trackingId
+          - startTime
+
+    TrackingEnded:
+      name: trackingEnded
+      title: Tracking Ended
+      summary: Notification that tracking session has ended
+      contentType: application/json
+      payload:
+        type: object
+        properties:
+          trackingId:
+            type: string
+          endTime:
+            type: string
+            format: date-time
+          reason:
+            type: string
+          finalPosition:
+            $ref: '#/components/schemas/Coordinates'
+          totalDistance:
+            type: number
+            description: Total distance tracked in meters
+          duration:
+            type: number
+            description: Tracking duration in seconds
+        required:
+          - trackingId
+          - endTime
+          - reason
+
+    # System Messages
+    TrackingHeartbeat:
+      name: trackingHeartbeat
+      title: Tracking Heartbeat
+      summary: Connection health and status update
+      contentType: application/json
+      payload:
+        type: object
+        properties:
+          trackingId:
+            type: string
+          timestamp:
+            type: string
+            format: date-time
+          activeConnections:
+            type: integer
+            description: Number of active subscribers
+          lastLocationTime:
+            type: string
+            format: date-time
+          status:
+            type: string
+            enum:
+              - active
+              - idle
+              - degraded
+              - offline
+        required:
+          - trackingId
+          - timestamp
+          - status
+
+    DriverHeartbeat:
+      name: driverHeartbeat
+      title: Driver Heartbeat
+      summary: Driver connection health check
+      contentType: application/json
+      payload:
+        type: object
+        properties:
+          trackingId:
+            type: string
+          driverId:
+            type: string
+          timestamp:
+            type: string
+            format: date-time
+          connectionQuality:
+            type: number
+            minimum: 0
+            maximum: 100
+        required:
+          - trackingId
+          - driverId
+          - timestamp
+
+    TrackingAlert:
+      name: trackingAlert
+      title: Tracking Alert
+      summary: Alert for tracking issues
+      contentType: application/json
+      payload:
+        type: object
+        properties:
+          trackingId:
+            type: string
+          alertType:
+            type: string
+            enum:
+              - gps_lost
+              - no_movement
+              - signal_weak
+              - battery_low
+              - connection_lost
+          severity:
+            type: string
+            enum:
+              - low
+              - medium
+              - high
+              - critical
+          timestamp:
+            type: string
+            format: date-time
+          description:
+            type: string
+          position:
+            $ref: '#/components/schemas/Coordinates'
+        required:
+          - trackingId
+          - alertType
+          - severity
+          - timestamp
+
+    TrackingError:
+      name: trackingError
+      title: Tracking Error
+      summary: Error message for tracking issues
+      contentType: application/json
+      payload:
+        type: object
+        properties:
+          trackingId:
+            type: string
+          errorCode:
+            type: string
+          message:
+            type: string
+          timestamp:
+            type: string
+            format: date-time
+          recoverable:
+            type: boolean
+        required:
+          - trackingId
+          - errorCode
+          - message
+          - timestamp
+
+  schemas:
+    Coordinates:
+      type: object
+      properties:
+        lat:
+          type: number
+          minimum: -90
+          maximum: 90
+        lng:
+          type: number
+          minimum: -180
+          maximum: 180
+        accuracy:
+          type: number
+          minimum: 0
+      required:
+        - lat
+        - lng

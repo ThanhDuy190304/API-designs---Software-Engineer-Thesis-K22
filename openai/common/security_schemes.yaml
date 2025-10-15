@@ -1,0 +1,24 @@
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        JWT-based authentication using Bearer token scheme.
+        
+        **Authentication Flow:**
+        1. **Login**: Obtain JWT token by calling `POST /auth/login` with valid credentials
+        2. **API Access**: Include the token in Authorization header for all subsequent requests
+          ```
+          Authorization: Bearer <your_jwt_token_here>
+          ```
+        
+        **Security Notes:**
+        - Tokens contain necessary user identification and authorization claims
+        - Tokens have expiration time (configured server-side)
+        - Protect tokens from exposure - treat them as sensitive credentials
+        - Refresh token mechanism may be available via separate endpoint
+        
+security:
+  - bearerAuth: []

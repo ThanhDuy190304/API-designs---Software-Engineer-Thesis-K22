@@ -3,14 +3,10 @@ info:
   title: Booking API
   version: 1.0.0
   description: |
-    Provides endpoints to manage trip bookings between renters and drivers.
+    API endpoints for both renter and driver applications to view and update the status of their bookings.
+    - **Renters** can create bookings and cancel them **as long as no driver has accepted yet**.
+    - **Drivers** can confirm when a trip has been completed.
 
-    Supports creation, retrieval, and status updates (cancel or complete).  
-    Responses vary by user role and booking status:
-    - Renter and Driver see limited counterpart info based on status
-    - Admin always sees both parties
-
-    Includes pagination for list queries and detailed error handling.
 
 servers:
   - url: http://localhost:8080/api/v1
@@ -18,10 +14,13 @@ servers:
 security:
   - bearerAuth: []
 
+tags:
+  - name: BOOKING
 paths:
   /bookings:
     get:
       summary: Get list of bookings
+      tags: [BOOKING]
       description: |
         Returns bookings with fields depending on the user role and booking status:
 
@@ -36,8 +35,8 @@ paths:
         - **Admin**:
           - Always sees both `renter` and `driver` regardless of status
       parameters:
-        - $ref: '#/components/parameters/PageParam'
-        - $ref: '#/components/parameters/ItemsPerPageParam'
+        - $ref: '../common/parameters.yaml#/components/parameters/CurrentPage'
+        - $ref: '../common/parameters.yaml#/components/parameters/ItemsPerPage'
       responses:
         '200':
           description: Successful response
@@ -54,14 +53,17 @@ paths:
                         - $ref: '#/components/schemas/BookingForDriver'
                         - $ref: '#/components/schemas/BookingForAdmin'
                   pagination:
-                    $ref: '#/components/schemas/Pagination'
+                    $ref: '../common/schemas.yaml#/components/schemas/Pagination'
+        '401':
+          $ref: '../common/error_responses.yaml#/components/responses/Unauthorized'
         '403':
-          $ref: '#/components/responses/UnauthorizedError'
+          $ref: '../common/error_responses.yaml#/components/responses/Forbidden'
         '500':
-          $ref: '#/components/responses/ServerError'
-        
+          $ref: '../common/error_responses.yaml#/components/responses/InternalServerError'
+
     post:
       summary: Create a new booking
+      tags: [BOOKING]
       requestBody:
         required: true
         content:
@@ -69,16 +71,15 @@ paths:
             schema:
               type: object
               properties:
-                renterId:
-                  type: string
                 pickup:
                   type: string
                 dropoff:
                   type: string
                 note:
                   type: string
+                promotionId:
+                  type: string                
               required:
-                - renterId
                 - pickup
                 - dropoff
       responses:
@@ -89,26 +90,27 @@ paths:
               schema:
                 $ref: '#/components/schemas/BookingForRenter'
         '400':
-          $ref: '#/components/responses/InvalidInput'
+          $ref: '../common/error_responses.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../common/error_responses.yaml#/components/responses/Unauthorized'
         '403':
-          $ref: '#/components/responses/UnauthorizedError'
+          $ref: '../common/error_responses.yaml#/components/responses/Forbidden'
+        '422':
+          $ref: '../common/error_responses.yaml#/components/responses/UnprocessableEntity'
         '500':
-          $ref: '#/components/responses/ServerError'
-
+          $ref: '../common/error_responses.yaml#/components/responses/InternalServerError'  
+  
   /bookings/{bookingId}:
     get:
       summary: Get booking details by ID
-      description: |
-        Returns a single booking filtered by user role and status rules:
-        - Renter: `driver` only if booking is PENDING or CONFIRMED
-        - Driver: `renter` only if booking is PENDING or CONFIRMED
-        - Admin: always includes both
+      tags: [BOOKING]
       parameters:
-        - name: bookingId
-          in: path
+        - in: path
+          name: bookingId
           required: true
           schema:
             type: string
+          description: ID of the booking to retrieve
       responses:
         '200':
           description: Successful response
@@ -119,50 +121,58 @@ paths:
                   - $ref: '#/components/schemas/BookingForRenter'
                   - $ref: '#/components/schemas/BookingForDriver'
                   - $ref: '#/components/schemas/BookingForAdmin'
+        '401':
+          $ref: '../common/error_responses.yaml#/components/responses/Unauthorized'
         '403':
-          $ref: '#/components/responses/UnauthorizedError'
+          $ref: '../common/error_responses.yaml#/components/responses/Forbidden'
         '404':
-          $ref: '#/components/responses/BookingNotFound'
+          $ref: '../common/error_responses.yaml#/components/responses/ResourceNotFound'
         '500':
-          $ref: '#/components/responses/ServerError'
+          $ref: '../common/error_responses.yaml#/components/responses/InternalServerError'
 
     patch:
-      summary: Update status of a booking (cancel, complete)
+      summary: Update booking (supports cancel action)
+      tags: [BOOKING]      
       parameters:
-        - name: bookingId
-          in: path
+        - in: path
+          name: bookingId
           required: true
           schema:
             type: string
+          description: ID of the booking to update
+
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                status:
-                  type: string
-                  enum: [CANCELLED, COMPLETED]
-                cancelReason:
-                  type: string
-              required:
-                - status
+              oneOf:
+                - $ref: '#/components/schemas/CancelBookingRequest'
+                - $ref: '#/components/schemas/CompleteBookingRequest'
+              example:
+                action: "cancel"
+                data:
+                  cancelReason: "Change of travel plans"
+      
       responses:
         '204':
           description: Booking updated successfully
         '400':
-          $ref: '#/components/responses/InvalidInput'
+          $ref: '../common/error_responses.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../common/error_responses.yaml#/components/responses/Unauthorized'
         '403':
-          $ref: '#/components/responses/UnauthorizedError'
+          $ref: '../common/error_responses.yaml#/components/responses/Forbidden'
         '404':
-          $ref: '#/components/responses/BookingNotFound'
+          $ref: '../common/error_responses.yaml#/components/responses/ResourceNotFound'
+        '422':
+          $ref: '../common/error_responses.yaml#/components/responses/UnprocessableEntity'
         '500':
-          $ref: '#/components/responses/ServerError'
-
+          $ref: '../common/error_responses.yaml#/components/responses/InternalServerError'
+  
 
 components:
-  schemas:
+  schemas:  
     BookingCommon:
       type: object
       properties:
@@ -171,6 +181,13 @@ components:
         status:
           type: string
           enum: [PENDING, CONFIRMED, CANCELLED, COMPLETED]
+          description: |
+            Represents the current status of the booking.
+            
+            - **PENDING** – The booking request has been created and is waiting for driver responses.
+            - **CONFIRMED** – The booking has been accepted by a driver and is now active.
+            - **CANCELLED** – The booking has been cancelled, either by the user or the system.
+            - **COMPLETED** – The booking has been successfully finished.
         pickup:
           type: string
         dropoff:
@@ -199,7 +216,7 @@ components:
         updatedAt:
           type: string
           format: date-time
-
+    
     BookingForRenter:
       allOf:
         - $ref: '#/components/schemas/BookingCommon'
@@ -210,7 +227,7 @@ components:
           description: |
             Includes driver only if status is PENDING or CONFIRMED.  
             Otherwise, `driver` is omitted.
-
+    
     BookingForDriver:
       allOf:
         - $ref: '#/components/schemas/BookingCommon'
@@ -221,7 +238,7 @@ components:
           description: |
             Includes renter only if status is PENDING or CONFIRMED.  
             Otherwise, `renter` is omitted.
-
+    
     BookingForAdmin:
       allOf:
         - $ref: '#/components/schemas/BookingCommon'
@@ -234,118 +251,59 @@ components:
           description: |
             Always includes both renter and driver, regardless of status.
 
+
+    CancelBookingRequest:
+      type: object
+      properties:
+        action:
+          type: string
+          enum: [cancel]
+        data:
+          type: object
+          properties:
+            cancelReason:
+              type: string
+          required:
+            - cancelReason
+      required:
+        - action
+        - data
+
+    CompleteBookingRequest:
+      type: object
+      properties:
+        action:
+          type: string
+          enum: [complete]
+      required:
+        - action
+
     Renter:
       type: object
       properties:
-        id:
-          type: string
         name:
           type: string
         phone:
           type: string
-
+    
     Driver:
       type: object
       properties:
-        id:
+        name:
           type: string
         avatar:
           type: string
-        name:
-          type: string
+          format: uri
         phone:
           type: string
         rating:
           type: number
           format: float
+          minimum: 0
+          maximum: 5
         licensePlate:
           type: string
-
-    Pagination:
-      type: object
-      properties:
-        currentPage:
-          type: integer
-        itemsPerPage:
-          type: integer
-        totalItems:
-          type: integer
-        totalPages:
-          type: integer
-
-    ErrorResponse:
-      type: object
-      properties:
-        errorCode:
-          type: string
-        messageEn:
-          type: string
-        messageVn:
-          type: string
-
-  parameters:
-    PageParam:
-      in: query
-      name: page
-      schema:
-        type: integer
-      description: Current page number (default 1)
-
-    ItemsPerPageParam:
-      in: query
-      name: itemsPerPage
-      schema:
-        type: integer
-        example: 20
-      description: Number of items per page (default 20)
-
-  responses:
-    ServerError:
-      description: Internal server error
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-          example:
-            errorCode: SERVER_ERROR
-            messageEn: An unexpected error occurred
-            messageVn: Đã xảy ra lỗi không mong muốn
-
-    UnauthorizedError:
-      description: Unauthorized access
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-          example:
-            errorCode: UNAUTHORIZED_ACCESS
-            messageEn: Unauthorized access
-            messageVn: Truy cập không hợp lệ
-    
-    InvalidInput:
-      description: Invalid input
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-          example:
-            errorCode: INVALID_INPUT
-            messageEn: Invalid request parameters (format example)
-            messageVn: Tham số yêu cầu không hợp lệ (ghi ra định dạng mẫu)
-
-    BookingNotFound:
-      description: Booking not found
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-          example:
-            errorCode: BOOKING_NOT_FOUND
-            messageEn: Booking not found
-            messageVn: Không tìm thấy đơn đặt xe
-      
+  
   securitySchemes:
     bearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
+      $ref: '../common/security_schemes.yaml#/components/securitySchemes/bearerAuth'

@@ -1,0 +1,197 @@
+openapi: 3.0.0
+info:
+  title: Feedback API
+  version: 1.0.0
+  description: | 
+    API for managing feedback within the application.
+
+    **Role Permissions:**
+    - **Driver / Renter:**  
+      - View feedback by ID  
+      - Create feedback for completed bookings  
+      - View feedback associated with a specific booking
+    - **Admin:**  
+      - View all feedback entries with pagination  
+      - View individual feedback details by ID
+
+    **Authentication:**  All endpoints require JWT Bearer token authentication.
+
+security:
+  - bearerAuth: []
+
+tags:
+  - name: Feedback
+
+paths:
+
+  /feedback:
+    get:
+      summary: Get all feedback
+      description: |
+        **Required role:** ADMIN   
+        Retrieve all feedback with pagination support. Only accessible by administrators.
+      tags: [Administrative operations]
+      parameters:
+        - $ref: '../common/parameters.yaml#/components/parameters/CurrentPage'
+        - $ref: '../common/parameters.yaml#/components/parameters/ItemsPerPage'
+      responses:
+        '200':
+          description: A list of all feedback (having filters)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  feedback:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Feedback'
+                  pagination:
+                    $ref: '../common/schemas.yaml#/components/schemas/Pagination'
+
+        '401':
+          $ref: '../common/error_responses.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../common/error_responses.yaml#/components/responses/Forbidden'
+        '500':
+          $ref: '../common/error_responses.yaml#/components/responses/InternalServerError'
+
+  /feedback/{id}:
+    get:
+      summary: Get feedback by ID
+      tags: [Feedback]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: ID of the feedback to retrieve
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Feedback'
+        '401':
+          $ref: '../common/error_responses.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../common/error_responses.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../common/error_responses.yaml#/components/responses/ResourceNotFound'
+        '500':
+          $ref: '../common/error_responses.yaml#/components/responses/InternalServerError'
+
+  /feedback/bookings/{bookingId}:
+    get:
+      summary: Get feedback of a specific bookings
+      tags: [Feedback]
+      parameters:
+          - in: path
+            name: bookingId
+            required: true
+            schema:
+              type: string
+            description: ID of the booking to retrieve feedback
+      responses:
+        '200':
+          description: A list of feedback for the specified booking
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  feedback:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Feedback'
+        '401':
+          $ref: '../common/error_responses.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../common/error_responses.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../common/error_responses.yaml#/components/responses/ResourceNotFound'
+        '500':
+          $ref: '../common/error_responses.yaml#/components/responses/InternalServerError'
+    
+    post:
+      summary: Create feedback for a specific booking
+      tags: [Feedback]
+      parameters:
+          - in: path
+            name: bookingId
+            required: true
+            schema:
+              type: string
+            description: ID of the booking to create feedback
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                comment:
+                  type: string
+                  minLength: 1         
+                  maxLength: 500       
+                rating:
+                  type: integer
+                  minimum: 1
+                  maximum: 5
+              required:
+                - comment
+                - rating
+      responses:
+        '201': 
+          description: Feedback created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Feedback'
+        '400':
+          $ref: '../common/error_responses.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../common/error_responses.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../common/error_responses.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../common/error_responses.yaml#/components/responses/ResourceNotFound'
+        '422':
+          $ref: '../common/error_responses.yaml#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '../common/error_responses.yaml#/components/responses/InternalServerError'
+
+components:
+  schemas:
+    Feedback:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        bookingId:
+          type: string
+          format: uuid
+        type:
+          type: string
+          enum: [FROM_DRIVER, FROM_RENTER]
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+          example: 4
+        comment:
+          type: string
+          example: "OK"       
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time 
+  
+  securitySchemes:
+    bearerAuth:
+      $ref: '../common/security_schemes.yaml#/components/securitySchemes/bearerAuth'
