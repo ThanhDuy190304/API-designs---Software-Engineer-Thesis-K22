@@ -111,7 +111,7 @@ paths:
                   example: "driver_license"
                 mediaId:
                   type: string
-                  format: uuid
+                  
                   example: "550e8400-e29b-41d4-a716-446655440000"
       responses:
         '201':
@@ -392,7 +392,7 @@ components:
       properties:
         id:
           type: string
-          format: uuid
+          
         name:
           type: string
         license:
@@ -409,12 +409,12 @@ components:
       properties: 
         id:
           type: string
-          format: uuid
+          
         type: 
           type: string
         mediaId:
           type: string
-          format: uuid
+          
           description: "Reference to uploaded media file of the document."
         status:
           type: string
@@ -441,10 +441,10 @@ components:
       properties:
         id: 
           type: string
-          format: uuid
+          
         bookingId:
           type: string
-          format: uuid
+          
         amount:
           type: number
           format: int64
@@ -475,7 +475,7 @@ components:
           properties:
             id:
               type: string
-              format: uuid
+              
             createdAt:
               type: string
               format: date-time

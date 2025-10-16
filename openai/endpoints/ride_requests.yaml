@@ -97,7 +97,7 @@ components:
       properties:
         id:
           type: string
-          format: uuid
+          
         bookingId:
           type: string
           description: Reference to the original booking

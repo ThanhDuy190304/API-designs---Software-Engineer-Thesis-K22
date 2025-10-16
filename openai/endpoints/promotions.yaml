@@ -255,7 +255,7 @@ components:
       properties:
         id:
           type: string
-          format: uuid
+          
         type:
           type: string
           enum: [LOYALTY, EVENT, SEASONAL]
@@ -312,7 +312,7 @@ components:
       properties:
         id:
           type: string
-          format: uuid
+          
         userId:
           type: string
         promotionId:
@@ -327,10 +327,10 @@ components:
       properties:
         userId:
           type: string
-          format: uuid
+          
         promotionId:
           type: string
-          format: uuid
+          
         status:
           type: string
         assignedDate:
