@@ -5,9 +5,7 @@ components:
       properties:
         errorCode:
           type: string
-        messageEn:
-          type: string
-        messageVn:
+        message:
           type: string
 
     UnprocessableEntityError:
@@ -22,10 +20,9 @@ components:
                 properties:
                   field:
                     type: string
-                  messageEn:
+                  message:
                     type: string
-                  messageVn:
-                    type: string
+      
                     
   responses:
     #400 - Bad Request
@@ -37,8 +34,7 @@ components:
             $ref: '#/components/schemas/ErrorResponse'
           example:
             errorCode: BAD_REQUEST
-            messageEn: Invalid request syntax
-            messageVn: Cú pháp yêu cầu không hợp lệ
+            message: Invalid request syntax/ Cú pháp yêu cầu không hợp lệ
     
     #401 - Unauthorized
     Unauthorized:
@@ -49,8 +45,7 @@ components:
             $ref: '#/components/schemas/ErrorResponse'
           example:
             errorCode: UNAUTHORIZED
-            messageEn: Authentication required to access this resource
-            messageVn: Yêu cầu xác thực để truy cập tài nguyên này
+            message: Authentication required to access this resource/ Yêu cầu xác thực để truy cập tài nguyên này
 
     #403 - Forbidden
     Forbidden:
@@ -61,8 +56,8 @@ components:
             $ref: '#/components/schemas/ErrorResponse'
           example:
             errorCode: FORBIDDEN
-            messageEn: Insufficient permissions to access this resource
-            messageVn: Không đủ quyền truy cập tài nguyên này
+            message: Insufficient permissions to access this resource /  Không đủ quyền truy cập tài nguyên này
+    
 
     #404 - Resource Not Found
     ResourceNotFound:
@@ -73,8 +68,7 @@ components:
             $ref: '#/components/schemas/ErrorResponse'
           example:
             errorCode: RESOURCE_NOT_FOUND
-            messageEn: The requested resource was not found
-            messageVn: Không tìm thấy tài nguyên yêu cầu
+            message: The requested resource was not found / Không tìm thấy tài nguyên yêu cầu
 
     #409 - Conflict
     Conflict:
@@ -83,19 +77,9 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
-          examples:
-            duplicateResource:
-              summary: Tài nguyên trùng lặp
-              value:
-                errorCode: CONFLICT
-                messageEn: "Resource already exists"
-                messageVn: "Tài nguyên đã tồn tại"
-            userConflict:
-              summary: Người dùng đã tồn tại
-              value:
-                errorCode: CONFLICT
-                messageEn: "User with this email already exists"
-                messageVn: "Người dùng với email này đã tồn tại"
+          example:
+            errorCode: CONFLICT
+            message: User with this email already exists / Người dùng với email này đã tồn tại
       
     #422 -  Unprocessable Entity
     UnprocessableEntity:
@@ -106,15 +90,12 @@ components:
             $ref: '#/components/schemas/UnprocessableEntityError'
           example:
             errorCode: UNPROCESSABLE_ENTITY
-            messageEn: Invalid input data
-            messageVn: Dữ liệu đầu vào không hợp lệ
+            message: Invalid input data /  Dữ liệu đầu vào không hợp lệ
             details:
               - field: email
-                messageEn: Invalid email format
-                messageVn: Định dạng email không hợp lệ
+                message: Invalid email format / Định dạng email không hợp lệ
               - field: password
-                messageEn: Password must be at least 8 characters
-                messageVn: Mật khẩu phải có ít nhất 8 ký tự
+                message: Password must be at least 8 characters / Mật khẩu phải có ít nhất 8 ký tự
 
     #500 - Internal Server Error
     InternalServerError:
@@ -125,5 +106,4 @@ components:
             $ref: '#/components/schemas/ErrorResponse'
           example:
             errorCode: INTERNAL_SERVER_ERROR
-            messageEn: An unexpected error occurred
-            messageVn: Đã xảy ra lỗi không mong muốn 
+            message: An unexpected error occurred / Đã xảy ra lỗi không mong muốn
