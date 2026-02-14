@@ -1,68 +1,75 @@
 openapi: 3.0.0
 info:
-  title: Booking API
+  title: Booking Service API
   version: 1.0.0
-  description: |
-    API endpoints for both renter and driver applications to view and update the status of their bookings.
-    - **Renters** can create bookings and cancel them **as long as no driver has accepted yet**.
-    - **Drivers** can confirm when a trip has been completed.
-
+  description: Complete API documentation for booking service
 
 servers:
   - url: http://localhost:8080/api/v1
 
-security:
-  - bearerAuth: []
-
 tags:
   - name: BOOKING
+  - name: ADMIN
+
 paths:
   /bookings:
     get:
       summary: Get list of bookings
       tags: [BOOKING]
-      description: |
-        Returns bookings with fields depending on the user role and booking status:
-
-        - **Renter**:
-          - When status is `PENDING` or `CONFIRMED`: response includes `driver` object
-          - When status is `CANCELLED` or `COMPLETED`: `driver` will be omitted
-
-        - **Driver**:
-          - When status is `PENDING` or `CONFIRMED`: response includes `renter` object
-          - When status is `CANCELLED` or `COMPLETED`: `renter` will be omitted
-
-        - **Admin**:
-          - Always sees both `renter` and `driver` regardless of status
       parameters:
-        - $ref: '../common/parameters.yaml#/components/parameters/CurrentPage'
-        - $ref: '../common/parameters.yaml#/components/parameters/ItemsPerPage'
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+        - name: sort_by
+          in: query
+          schema:
+            type: string
+            enum: [created_at, updated_at]
+        - name: sort_order
+          in: query
+          schema:
+            type: string
+            enum: [asc, desc]
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, confirmed, cancelled, completed]
+        - name: create_from
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: create_to
+          in: query
+          schema:
+            type: string
+            format: date-time
       responses:
         '200':
-          description: Successful response
+          description: List of bookings retrieved successfully
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  bookings:
-                    type: array
-                    items:
-                      oneOf:
-                        - $ref: '#/components/schemas/BookingForRenter'
-                        - $ref: '#/components/schemas/BookingForDriver'
-                        - $ref: '#/components/schemas/BookingForAdmin'
-                  pagination:
-                    $ref: '../common/schemas.yaml#/components/schemas/Pagination'
+                $ref: '#/components/schemas/BookingListResponse'
         '401':
-          $ref: '../common/error_responses.yaml#/components/responses/Unauthorized'
+          description: Unauthorized
         '403':
-          $ref: '../common/error_responses.yaml#/components/responses/Forbidden'
+          description: Forbidden
         '500':
-          $ref: '../common/error_responses.yaml#/components/responses/InternalServerError'
+          description: Internal server error
 
+  /bookings/check-price:
     post:
-      summary: Create a new booking
+      summary: Check price and prepare booking (creates draft in cache)
       tags: [BOOKING]
       requestBody:
         required: true
@@ -70,6 +77,11 @@ paths:
           application/json:
             schema:
               type: object
+              required:
+                - pickup
+                - dropoff
+                - vehicle_type
+                - distance_km
               properties:
                 pickup:
                   type: string
@@ -77,122 +89,212 @@ paths:
                   type: string
                 note:
                   type: string
-                promotionId:
-                  type: string                
-              required:
-                - pickup
-                - dropoff
+                  maxLength: 500
+                promotion_id:
+                  type: string
+                vehicle_type:
+                  type: string
+                  enum: [car, motorbike]
+                distance_km:
+                  type: number
+                  format: float
       responses:
-        '201':
-          description: Booking created successfully
+        '200':
+          description: Price calculated and booking draft created
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/BookingForRenter'
+                $ref: '#/components/schemas/BookingResponse'
         '400':
-          $ref: '../common/error_responses.yaml#/components/responses/BadRequest'
+          description: Invalid request
         '401':
-          $ref: '../common/error_responses.yaml#/components/responses/Unauthorized'
+          description: Unauthorized
         '403':
-          $ref: '../common/error_responses.yaml#/components/responses/Forbidden'
+          description: Forbidden - Only renters can prepare bookings
         '422':
-          $ref: '../common/error_responses.yaml#/components/responses/UnprocessableEntity'
+          description: Validation error
         '500':
-          $ref: '../common/error_responses.yaml#/components/responses/InternalServerError'  
-  
-  /bookings/{bookingId}:
+          description: Internal server error
+
+  /bookings/{id}:
     get:
       summary: Get booking details by ID
       tags: [BOOKING]
       parameters:
-        - in: path
-          name: bookingId
+        - name: id
+          in: path
           required: true
           schema:
             type: string
-          description: ID of the booking to retrieve
       responses:
         '200':
-          description: Successful response
+          description: Booking details retrieved
           content:
             application/json:
               schema:
-                oneOf:
-                  - $ref: '#/components/schemas/BookingForRenter'
-                  - $ref: '#/components/schemas/BookingForDriver'
-                  - $ref: '#/components/schemas/BookingForAdmin'
+                $ref: '#/components/schemas/BookingResponse'
         '401':
-          $ref: '../common/error_responses.yaml#/components/responses/Unauthorized'
+          description: Unauthorized
         '403':
-          $ref: '../common/error_responses.yaml#/components/responses/Forbidden'
+          description: Forbidden
         '404':
-          $ref: '../common/error_responses.yaml#/components/responses/ResourceNotFound'
+          description: Booking not found
         '500':
-          $ref: '../common/error_responses.yaml#/components/responses/InternalServerError'
+          description: Internal server error
 
-    patch:
-      summary: Update booking (supports cancel action)
-      tags: [BOOKING]      
+  /bookings/{id}/find-driver:
+    post:
+      summary: Match driver to pending booking (PENDING → CONFIRMED)
+      description: Rate limited to 5 requests
+      tags: [BOOKING]
       parameters:
-        - in: path
-          name: bookingId
+        - name: id
+          in: path
           required: true
           schema:
             type: string
-          description: ID of the booking to update
-
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              oneOf:
-                - $ref: '#/components/schemas/CancelBookingRequest'
-                - $ref: '#/components/schemas/CompleteBookingRequest'
-              example:
-                action: "cancel"
-                data:
-                  cancelReason: "Change of travel plans"
-      
       responses:
-        '204':
-          description: Booking updated successfully
+        '200':
+          description: Driver matched, booking confirmed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookingResponse'
         '400':
-          $ref: '../common/error_responses.yaml#/components/responses/BadRequest'
+          description: Invalid booking ID
         '401':
-          $ref: '../common/error_responses.yaml#/components/responses/Unauthorized'
+          description: Unauthorized
         '403':
-          $ref: '../common/error_responses.yaml#/components/responses/Forbidden'
+          description: Forbidden
         '404':
-          $ref: '../common/error_responses.yaml#/components/responses/ResourceNotFound'
+          description: Booking not found
+        '409':
+          description: Booking not in PENDING status
         '422':
-          $ref: '../common/error_responses.yaml#/components/responses/UnprocessableEntity'
+          description: Invalid booking data
+        '429':
+          description: Rate limit exceeded
         '500':
-          $ref: '../common/error_responses.yaml#/components/responses/InternalServerError'
-  
+          description: Internal server error
+        '503':
+          description: Service unavailable
+
+  /admin/bookings:
+    get:
+      summary: Get list of all bookings (Admin only)
+      tags: [ADMIN]
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          schema:
+            type: integer
+        - name: sort_by
+          in: query
+          schema:
+            type: string
+            enum: [created_at, updated_at]
+        - name: sort_order
+          in: query
+          schema:
+            type: string
+            enum: [asc, desc]
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, confirmed, cancelled, completed]
+        - name: phone
+          in: query
+          schema:
+            type: string
+        - name: role
+          in: query
+          schema:
+            type: string
+            enum: [renter, driver]
+        - name: create_from
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: create_to
+          in: query
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: List of bookings retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookingListResponse'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden - Admin only
+        '500':
+          description: Internal server error
 
 components:
-  schemas:  
-    BookingCommon:
+  schemas:
+    BookingListResponse:
+      type: object
+      properties:
+        bookings:
+          type: array
+          items:
+            $ref: '#/components/schemas/BookingResponse'
+        pagination:
+          type: object
+          properties:
+            current_page:
+              type: integer
+            items_per_page:
+              type: integer
+            total_items:
+              type: integer
+            total_pages:
+              type: integer
+
+    BookingResponse:
       type: object
       properties:
         id:
           type: string
+          example: "507f1f77bcf86cd799439011"
         status:
           type: string
           enum: [PENDING, CONFIRMED, CANCELLED, COMPLETED]
-          description: |
-            Represents the current status of the booking.
-            
-            - **PENDING** – The booking request has been created and is waiting for driver responses.
-            - **CONFIRMED** – The booking has been accepted by a driver and is now active.
-            - **CANCELLED** – The booking has been cancelled, either by the user or the system.
-            - **COMPLETED** – The booking has been successfully finished.
+          example: "CONFIRMED"
+        vehicleType:
+          type: string
+          enum: [car, motorbike]
+          example: "car"
+        renterId:
+          type: string
+        driverId:
+          type: string
         pickup:
           type: string
         dropoff:
           type: string
         note:
+          type: string
+        baseAmount:
+          type: integer
+          format: int64
+        discountAmount:
+          type: integer
+          format: int64
+        totalAmount:
+          type: integer
+          format: int64
+        promotionId:
           type: string
         cancelBy:
           type: string
@@ -202,108 +304,36 @@ components:
         cancelAt:
           type: string
           format: date-time
-        baseAmount:
-          type: number
-        discountAmount:
-          type: number
-        totalAmount:
-          type: number
-        promotionId:
-          type: string
         createdAt:
           type: string
           format: date-time
         updatedAt:
           type: string
           format: date-time
+        driver:
+          $ref: '#/components/schemas/DriverInfo'
+        renter:
+          $ref: '#/components/schemas/RenterInfo'
     
-    BookingForRenter:
-      allOf:
-        - $ref: '#/components/schemas/BookingCommon'
-        - type: object
-          properties:
-            driver:
-              $ref: '#/components/schemas/Driver'
-          description: |
-            Includes driver only if status is PENDING or CONFIRMED.  
-            Otherwise, `driver` is omitted.
-    
-    BookingForDriver:
-      allOf:
-        - $ref: '#/components/schemas/BookingCommon'
-        - type: object
-          properties:
-            renter:
-              $ref: '#/components/schemas/Renter'
-          description: |
-            Includes renter only if status is PENDING or CONFIRMED.  
-            Otherwise, `renter` is omitted.
-    
-    BookingForAdmin:
-      allOf:
-        - $ref: '#/components/schemas/BookingCommon'
-        - type: object
-          properties:
-            renterId:
-              type: string
-            driverId:
-              type: string
-          description: |
-            Always includes both renter and driver, regardless of status.
-
-
-    CancelBookingRequest:
-      type: object
-      properties:
-        action:
-          type: string
-          enum: [cancel]
-        data:
-          type: object
-          properties:
-            cancelReason:
-              type: string
-          required:
-            - cancelReason
-      required:
-        - action
-        - data
-
-    CompleteBookingRequest:
-      type: object
-      properties:
-        action:
-          type: string
-          enum: [complete]
-      required:
-        - action
-
-    Renter:
+    DriverInfo:
       type: object
       properties:
         name:
           type: string
         phone:
-          type: string
-    
-    Driver:
-      type: object
-      properties:
-        name:
           type: string
         avatar:
           type: string
           format: uri
-        phone:
-          type: string
         rating:
           type: number
           format: float
-          minimum: 0
-          maximum: 5
-        licensePlate:
+
+    RenterInfo:
+      type: object
+      properties:
+        name:
+          type: string
+        phone:
           type: string
   
-  securitySchemes:
-    bearerAuth:
-      $ref: '../common/security_schemes.yaml#/components/securitySchemes/bearerAuth'
