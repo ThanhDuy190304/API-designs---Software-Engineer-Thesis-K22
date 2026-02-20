@@ -17,6 +17,8 @@ paths:
       summary: Get list of bookings
       tags: [BOOKING]
       parameters:
+        - $ref: '#/components/parameters/X-Role'
+        - $ref: '#/components/parameters/X-User-Id'
         - name: page
           in: query
           schema:
@@ -42,7 +44,7 @@ paths:
           in: query
           schema:
             type: string
-            enum: [pending, confirmed, cancelled, completed]
+            enum: [pending, confirmed, arrived, in_progress, cancelled, completed]
         - name: create_from
           in: query
           schema:
@@ -67,10 +69,13 @@ paths:
         '500':
           description: Internal server error
 
-  /bookings/check-price:
+  /bookings/estimate:
     post:
       summary: Check price and prepare booking (creates draft in cache)
       tags: [BOOKING]
+      parameters:
+        - $ref: '#/components/parameters/X-Role'
+        - $ref: '#/components/parameters/X-User-Id'
       requestBody:
         required: true
         content:
@@ -121,6 +126,8 @@ paths:
       summary: Get booking details by ID
       tags: [BOOKING]
       parameters:
+        - $ref: '#/components/parameters/X-Role'
+        - $ref: '#/components/parameters/X-User-Id'
         - name: id
           in: path
           required: true
@@ -148,6 +155,8 @@ paths:
       description: Rate limited to 5 requests
       tags: [BOOKING]
       parameters:
+        - $ref: '#/components/parameters/X-Role'
+        - $ref: '#/components/parameters/X-User-Id'
         - name: id
           in: path
           required: true
@@ -179,6 +188,138 @@ paths:
         '503':
           description: Service unavailable
 
+  # /bookings/{id}/cancel:
+  #   post:
+  #     summary: Cancel a booking 
+  #     tags: [BOOKING]
+  #     parameters:
+  #       - $ref: '#/components/parameters/X-Role'
+  #       - $ref: '#/components/parameters/X-User-Id'
+  #       - name: id
+  #         in: path
+  #         required: true
+  #         schema:
+  #           type: string
+  #     requestBody:
+  #       required: true
+  #       content:
+  #         application/json:
+  #           schema:
+  #             type: object
+  #             required:
+  #               - cancel_reason
+  #             properties:
+  #               cancel_reason:
+  #                 type: string
+  #                 maxLength: 500
+  #     responses:
+  #       '204':
+  #         description: Booking cancelled successfully
+  #       '400':
+  #         description: Invalid request
+  #       '401':
+  #         description: Unauthorized
+  #       '403':
+  #         description: Forbidden
+  #       '404':
+  #         description: Booking not found
+  #       '409':
+  #         description: Booking cannot be cancelled in current status
+  #       '500':
+  #         description: Internal server error
+
+  # /bookings/{id}/confirm:
+  #   post:
+  #     summary: Confirm a booking with a specific driver (PENDING → CONFIRMED)
+  #     description: Called by driver to confirm assignment
+  #     tags: [BOOKING]
+  #     parameters:
+  #       - $ref: '#/components/parameters/X-Role'
+  #       - $ref: '#/components/parameters/X-User-Id'
+  #       - name: id
+  #         in: path
+  #         required: true
+  #         schema:
+  #           type: string
+  #     requestBody:
+  #       required: true
+  #       content:
+  #         application/json:
+  #           schema:
+  #             type: object
+  #             required:
+  #               - driver_id
+  #             properties:
+  #               driver_id:
+  #                 type: string
+  #     responses:
+  #       '204':
+  #         description: Booking confirmed successfully
+  #       '400':
+  #         description: Invalid request
+  #       '401':
+  #         description: Unauthorized
+  #       '403':
+  #         description: Forbidden - Only drivers can confirm
+  #       '404':
+  #         description: Booking not found
+  #       '409':
+  #         description: Booking not in PENDING status or assigned to another driver
+  #       '500':
+  #         description: Internal server error
+
+  # /bookings/{id}/arrive:
+  #   post:
+  #     summary: Driver marks arrival at pickup location (CONFIRMED → ARRIVED)
+  #     tags: [BOOKING]
+  #     parameters:
+  #       - $ref: '#/components/parameters/X-Role'
+  #       - $ref: '#/components/parameters/X-User-Id'
+  #       - name: id
+  #         in: path
+  #         required: true
+  #         schema:
+  #           type: string
+  #     responses:
+  #       '204':
+  #         description: Arrival recorded successfully
+  #       '401':
+  #         description: Unauthorized
+  #       '403':
+  #         description: Forbidden - Only drivers can mark arrival
+  #       '404':
+  #         description: Booking not found
+  #       '409':
+  #         description: Booking not in CONFIRMED status
+  #       '500':
+  #         description: Internal server error
+
+  # /bookings/{id}/start-ride:
+  #   post:
+  #     summary: Driver starts the ride (ARRIVED → IN_PROGRESS)
+  #     tags: [BOOKING]
+  #     parameters:
+  #       - $ref: '#/components/parameters/X-Role'
+  #       - $ref: '#/components/parameters/X-User-Id'
+  #       - name: id
+  #         in: path
+  #         required: true
+  #         schema:
+  #           type: string
+  #     responses:
+  #       '204':
+  #         description: Ride started successfully
+  #       '401':
+  #         description: Unauthorized
+  #       '403':
+  #         description: Forbidden - Only drivers can start the ride
+  #       '404':
+  #         description: Booking not found
+  #       '409':
+  #         description: Booking not in ARRIVED status
+  #       '500':
+  #         description: Internal server error
+
   /admin/bookings:
     get:
       summary: Get list of all bookings (Admin only)
@@ -206,7 +347,7 @@ paths:
           in: query
           schema:
             type: string
-            enum: [pending, confirmed, cancelled, completed]
+            enum: [pending, confirmed, arrived, in_progress, cancelled, completed]
         - name: phone
           in: query
           schema:
@@ -269,7 +410,7 @@ components:
           example: "507f1f77bcf86cd799439011"
         status:
           type: string
-          enum: [PENDING, CONFIRMED, CANCELLED, COMPLETED]
+          enum: [PENDING, CONFIRMED, ARRIVED, IN_PROGRESS, CANCELLED, COMPLETED]
           example: "CONFIRMED"
         vehicleType:
           type: string
@@ -337,3 +478,20 @@ components:
         phone:
           type: string
   
+  parameters:
+    X-Role:
+      name: X-Role
+      in: header
+      required: true
+      schema:
+        type: string
+        enum: [renter, driver, admin]
+      description: User role
+    
+    X-User-Id:
+      name: X-User-Id
+      in: header
+      required: true
+      schema:
+        type: string
+      description: Authenticated user ID
